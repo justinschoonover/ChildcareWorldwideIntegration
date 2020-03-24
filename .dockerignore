@@ -1,0 +1,13 @@
+*/bin
+*/obj
+test
+.dockerignore
+.gcloudignore
+.env
+.git
+.gitignore
+.vs
+.vscode
+*.user
+README.md
+LICENSE
