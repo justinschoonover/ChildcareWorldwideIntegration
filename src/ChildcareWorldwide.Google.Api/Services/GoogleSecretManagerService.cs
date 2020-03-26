@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Google.Api.Helpers;
-using Google.Api.Gax;
-using Google.Api.Gax.ResourceNames;
 using Google.Cloud.SecretManager.V1Beta1;
 
 namespace ChildcareWorldwide.Google.Api

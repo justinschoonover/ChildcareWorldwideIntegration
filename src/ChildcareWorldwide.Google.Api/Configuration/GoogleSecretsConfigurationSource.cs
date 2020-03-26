@@ -1,5 +1,4 @@
-﻿using ChildcareWorldwide.Google.Api.Configuration;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 
 namespace ChildcareWorldwide.Google.Api.Configuration
 {

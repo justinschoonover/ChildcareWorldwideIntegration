@@ -1,4 +1,3 @@
-using System;
 using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Denari.Api;
 using Microsoft.AspNetCore.Authentication;

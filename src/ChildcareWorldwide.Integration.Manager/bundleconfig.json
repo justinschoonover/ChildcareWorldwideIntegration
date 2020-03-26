@@ -1,0 +1,25 @@
+[
+  {
+    "outputFileName": "wwwroot/css/dashboard.min.css",
+    "inputFiles": [
+      "wwwroot/css/dashboard.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/css/sticky-footer.min.css",
+    "inputFiles": [
+      "wwwroot/css/sticky-footer.css"
+    ]
+  },
+  {
+    "outputFileName": "wwwroot/js/dashboard.min.js",
+    "inputFiles": [
+      "wwwroot/js/dashboard.js"
+    ],
+    "minify": {
+      "enabled": true,
+      "renameLocals": true
+    },
+    "sourceMap": false
+  }
+]

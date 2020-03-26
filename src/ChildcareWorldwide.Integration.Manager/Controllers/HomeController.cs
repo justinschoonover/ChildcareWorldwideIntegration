@@ -1,8 +1,8 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Denari.Api;
 using ChildcareWorldwide.Integration.Manager.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -10,7 +10,7 @@ using Microsoft.Extensions.Logging;
 namespace ChildcareWorldwide.Integration.Manager.Controllers
 {
     [Authorize]
-    public class HomeController : Controller
+    public class HomeController : ControllerBase
     {
         private readonly ILogger<HomeController> _logger;
 
@@ -21,16 +21,18 @@ namespace ChildcareWorldwide.Integration.Manager.Controllers
 
         public async Task<IActionResult> IndexAsync([FromServices] IDrapiService drapiService)
         {
-            await foreach (var donor in drapiService.GetDonorsAsync())
-            {
-                Console.WriteLine(donor.DonorKey);
-            }
+            //await foreach (var donor in drapiService.GetDonorsAsync())
+            //{
+            //    Console.WriteLine(donor.DonorKey);
+            //}
 
-            return View();
+            return View(GetPageViewModel(pageTitle: "CCW Integration Dashboard", HttpContext.User));
         }
 
-        public IActionResult Privacy()
+        [HttpGet("/Logout")]
+        public async Task<IActionResult> LogoutAsync()
         {
+            await HttpContext.SignOutAsync();
             return View();
         }
 
