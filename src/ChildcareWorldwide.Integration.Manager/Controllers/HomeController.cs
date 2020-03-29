@@ -19,14 +19,9 @@ namespace ChildcareWorldwide.Integration.Manager.Controllers
             _logger = logger;
         }
 
-        public async Task<IActionResult> IndexAsync([FromServices] IDrapiService drapiService)
+        public IActionResult Index()
         {
-            //await foreach (var donor in drapiService.GetDonorsAsync())
-            //{
-            //    Console.WriteLine(donor.DonorKey);
-            //}
-
-            return View(GetPageViewModel(pageTitle: "CCW Integration Dashboard", HttpContext.User));
+            return View(GetPageViewModel(pageTitle: "Integration Dashboard", HttpContext.User));
         }
 
         [HttpGet("/Logout")]

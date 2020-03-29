@@ -1,0 +1,123 @@
+﻿@model ChildcareWorldwide.Integration.Manager.Models.ViewModelBase<DenariLookup>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h4>Debugging tool - Show the account as seen by the API</h4>
+            <form class="form-inline" method="post" asp-controller="Denari" asp-action="Lookup">
+                <div class="form-group mr-2">
+                    <label class="mr-2" for="accountNumber">Account Number</label>
+                    <input type="text" class="form-control mb-2 mr-sm-2" id="accountNumber" name="accountNumber" placeholder="Account #" value="@Model.Data.Donor?.Account" required />
+                </div>
+                <button class="btn btn-primary btn-sm" type="submit">Lookup</button>
+            </form>
+        </div>
+    </div>
+    <br />
+    @if (Model.Data.Donor != null)
+    {
+        <div class="row">
+            <div class="col">
+                <div class="card">
+                    <div class="card-body">
+                        <form>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="firstName">First Name</label>
+                                    <input type="text" class="form-control" id="firstName" readonly value="@Model.Data.Donor?.FirstName" />
+                                </div>
+                                <div class="col">
+                                    <label for="lastName">Last Name</label>
+                                    <input type="text" class="form-control" id="lastName" readonly value="@Model.Data.Donor?.LastName" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="contactName">Contact Name</label>
+                                    <input type="text" class="form-control" id="contactName" readonly value="@Model.Data.Donor?.ContactName" />
+                                </div>
+                                <div class="col">
+                                    <label for="jobTitle">Job Title Name</label>
+                                    <input type="text" class="form-control" id="jobTitle" readonly value="@Model.Data.Donor?.JobTitle" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="spouse">Spouse / Secondary</label>
+                                    <input type="text" class="form-control" id="spouse" readonly value="@Model.Data.Donor?.Spouse" />
+                                </div>
+                                <div class="col">
+                                    <label for="salutation">Salutation</label>
+                                    <input type="text" class="form-control" id="salutation" readonly value="@Model.Data.Donor?.Salutation" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="organization">Organization</label>
+                                    <input type="text" class="form-control" id="organization" readonly value="@Model.Data.Donor?.Organization" />
+                                </div>
+                                <div class="col">
+                                    <label for="donorType">Donor Type</label>
+                                    <input type="text" class="form-control" id="donorType" readonly value="@Model.Data.Donor?.Type" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="email">Email</label>
+                                    <input type="text" class="form-control" id="email" readonly value="@Model.Data.Donor?.Email" />
+                                </div>
+                                <div class="col">
+                                    <label for="email2">Secondary Email</label>
+                                    <input type="text" class="form-control" id="email2" readonly value="@Model.Data.Donor?.Email2" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="street">Address 1</label>
+                                    <input type="text" class="form-control" id="street" readonly value="@Model.Data.Donor?.Street" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="street2">Address 2</label>
+                                    <input type="text" class="form-control" id="street2" readonly value="@Model.Data.Donor?.Street2" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="city">City</label>
+                                    <input type="text" class="form-control" id="city" readonly value="@Model.Data.Donor?.City" />
+                                </div>
+                                <div class="col">
+                                    <label for="state">State</label>
+                                    <input type="text" class="form-control" id="state" readonly value="@Model.Data.Donor?.State" />
+                                </div>
+                                <div class="col">
+                                    <label for="zip">Zip</label>
+                                    <input type="text" class="form-control" id="zip" readonly value="@Model.Data.Donor?.Zip" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="col">
+                                    <label for="homePhone">Home Phone</label>
+                                    <input type="text" class="form-control" id="homePhone" readonly value="@Model.Data.Donor?.Phone" />
+                                </div>
+                                <div class="col">
+                                    <label for="workPhone">Work Phone</label>
+                                    <input type="text" class="form-control" id="workPhone" readonly value="@Model.Data.Donor?.WorkPhone" />
+                                </div>
+                                <div class="col">
+                                    <label for="cellPhone">Cell Phone</label>
+                                    <input type="text" class="form-control" id="cellPhone" readonly value="@Model.Data.Donor?.CellPhone" />
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <label for="notes">Notes</label>
+                                <textarea class="form-control" id="notes" rows="4">@String.Join("\n", Model.Data.Donor?.Notes)</textarea>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+</div>
