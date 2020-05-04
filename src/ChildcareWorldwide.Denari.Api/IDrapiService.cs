@@ -6,7 +6,7 @@ namespace ChildcareWorldwide.Denari.Api
 {
     public interface IDrapiService
     {
-        Task<Donor?> GetDonorByAccountAsync(string accountNumber);
+        Task<(Donor? donor, string? rawJson)> GetDonorByAccountAsync(string accountNumber);
         IAsyncEnumerable<Donor> GetDonorsAsync();
     }
 }

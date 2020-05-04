@@ -1,0 +1,20 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>51c80dae-6842-4078-9189-ee813dacf86e</UserSecretsId>
+    <AssemblyName>CloneHubspotProperties</AssemblyName>
+  </PropertyGroup>
+  
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.3" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="3.1.3" />
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="..\ChildcareWorldwide.Google.Api\ChildcareWorldwide.Google.Api.csproj" />
+    <ProjectReference Include="..\ChildcareWorldwide.Hubspot.Api\ChildcareWorldwide.Hubspot.Api.csproj" />
+  </ItemGroup>
+  
+</Project>

@@ -4,6 +4,7 @@ namespace ChildcareWorldwide.Denari.Api.Models
 {
     public sealed class DrapiFilter
     {
-        public List<BooleanCondition> FilterTree { get; set; }
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only")]
+        public List<BooleanCondition> FilterTree { get; set; } = new List<BooleanCondition>();
     }
 }

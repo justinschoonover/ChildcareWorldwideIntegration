@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Denari.Api;
+using ChildcareWorldwide.Hubspot.Api;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -44,6 +45,7 @@ namespace ChildcareWorldwide.Integration.Manager
                 });
 
             services.AddSingleton<IDrapiService>(sp => new DrapiService(Configuration["DenariApiKey"]));
+            services.AddSingleton<IHubspotService>(sp => new HubspotService(Configuration["HubspotApiKey"]));
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)

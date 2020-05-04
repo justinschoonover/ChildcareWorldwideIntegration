@@ -13,17 +13,17 @@ namespace ChildcareWorldwide.Denari.Api
     public sealed class DrapiService : IDrapiService
     {
         private readonly Uri m_baseUri = new Uri("https://api.denarionline.com/v1/api/");
-        private readonly string m_denariApiKey;
+        private readonly string m_apiKey;
 
         public DrapiService(string denariApiKey = "")
         {
-            m_denariApiKey = denariApiKey;
+            m_apiKey = denariApiKey;
         }
 
-        public async Task<Donor?> GetDonorByAccountAsync(string accountNumber)
+        public async Task<(Donor? donor, string? rawJson)> GetDonorByAccountAsync(string accountNumber)
         {
             using HttpClient client = GetClient();
-            using var json = SerializeJsonForDrapi(new DonorList
+            using var filterJson = SerializeJsonForDrapi(new DonorList
             {
                 PageSize = 10,
                 PageCount = 0,
@@ -54,10 +54,12 @@ namespace ChildcareWorldwide.Denari.Api
                 },
             });
 
-            var response = await client.PostAsync("Donor/firstpage", json);
+            var response = await client.PostAsync("Donor/firstpage", filterJson);
             response.EnsureSuccessStatusCode();
-            var donors = JsonConvert.DeserializeObject<DonorList>(await response.Content.ReadAsStringAsync());
-            return donors?.Data.FirstOrDefault();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var donors = JsonConvert.DeserializeObject<DonorList>(responseJson);
+            return (donors?.Data.FirstOrDefault(), responseJson);
         }
 
         public async IAsyncEnumerable<Donor> GetDonorsAsync()
@@ -72,6 +74,7 @@ namespace ChildcareWorldwide.Denari.Api
                 Filter = new DrapiFilter(),
             });
 
+            // TODO: add paging
             var response = await client.PostAsync("Donor/firstpage", json);
             response.EnsureSuccessStatusCode();
             var donors = JsonConvert.DeserializeObject<DonorList>(await response.Content.ReadAsStringAsync());
@@ -84,7 +87,7 @@ namespace ChildcareWorldwide.Denari.Api
         private HttpClient GetClient()
         {
             var client = new HttpClient() { BaseAddress = m_baseUri };
-            client.DefaultRequestHeaders.Add("drapi-authorization", m_denariApiKey);
+            client.DefaultRequestHeaders.Add("drapi-authorization", m_apiKey);
             return client;
         }
 
