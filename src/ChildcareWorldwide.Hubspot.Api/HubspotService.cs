@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using ChildcareWorldwide.Hubspot.Api.DomainModels;
 using ChildcareWorldwide.Hubspot.Api.Helpers;
+using ChildcareWorldwide.Hubspot.Api.Mappers;
 using ChildcareWorldwide.Hubspot.Api.Models;
 using ChildcareWorldwide.Hubspot.Api.Responses;
 using Microsoft.AspNetCore.WebUtilities;
@@ -34,9 +37,50 @@ namespace ChildcareWorldwide.Hubspot.Api
 
         #region CRM Companies API https://developers.hubspot.com/docs/api/crm/companies
 
-        public async Task<Company> GetCompanyAsync()
+        public async Task<Company?> GetCompanyByDenariAccountIdAsync(string accountId)
         {
-            throw new NotImplementedException();
+            var filter = new CrmSearchOptions
+            {
+                FilterGroups =
+                {
+                    new CrmSearchFilterGroups
+                    {
+                        Filters =
+                        {
+                            new CrmSearchFilter
+                            {
+                                PropertyName = "account_id",
+                                Operator = "EQ",
+                                Value = accountId,
+                            },
+                        },
+                    },
+                },
+                Properties =
+                {
+                    "account_id",
+                },
+                Limit = 1,
+            };
+
+            var json = JsonConvert.SerializeObject(filter, Formatting.Indented, new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy(),
+                },
+                NullValueHandling = NullValueHandling.Ignore,
+            });
+
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await m_client.PostAsync("crm/v3/objects/companies/search", content);
+            response.EnsureSuccessStatusCode();
+
+            var searchResults = JsonConvert.DeserializeObject<ReadCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+            if (searchResults == null)
+                return null;
+
+            return CompanyMapper.MapCompany(searchResults.Results.FirstOrDefault());
         }
 
         public async Task CreateCompanyAsync(Company company)

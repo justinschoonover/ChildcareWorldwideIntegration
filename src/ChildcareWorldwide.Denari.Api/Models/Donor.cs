@@ -112,37 +112,37 @@ namespace ChildcareWorldwide.Denari.Api.Models
         public DateTime? FirstGiftDate { get; set; }
 
         [JsonProperty("Donor_FirstGiftAmount")]
-        public float FirstGiftAmount { get; set; }
+        public decimal FirstGiftAmount { get; set; }
 
         [JsonProperty("Donor_LastGiftDate")]
         public DateTime? LastGiftDate { get; set; }
 
         [JsonProperty("Donor_LastGiftAmount")]
-        public float LastGiftAmount { get; set; }
+        public decimal LastGiftAmount { get; set; }
 
         [JsonProperty("Donor_BigGift")]
-        public float BigGift { get; set; }
+        public decimal BigGift { get; set; }
 
         [JsonProperty("Donor_AverageGift")]
-        public float AverageGift { get; set; }
+        public decimal AverageGift { get; set; }
 
         [JsonProperty("Donor_TotalGifts")]
-        public float TotalGifts { get; set; }
+        public decimal TotalGifts { get; set; }
 
         [JsonProperty("Donor_GiftsYTD")]
-        public float GiftsYtd { get; set; }
+        public decimal GiftsYtd { get; set; }
 
         [JsonProperty("Donor_GiftsLastYear")]
-        public float GiftsLastYear { get; set; }
+        public decimal GiftsLastYear { get; set; }
 
         [JsonProperty("Donor_Gifts2YearsAgo")]
-        public float Gifts2YearsAgo { get; set; }
+        public decimal Gifts2YearsAgo { get; set; }
 
         [JsonProperty("Donor_Gifts3YearsAgo")]
-        public float Gifts3YearsAgo { get; set; }
+        public decimal Gifts3YearsAgo { get; set; }
 
         [JsonProperty("Donor_Gifts4YearsAgo")]
-        public float Gifts4YearsAgo { get; set; }
+        public decimal Gifts4YearsAgo { get; set; }
 
         [JsonProperty("Donor_Added_Datetime")]
         public DateTime? AddedDateTime { get; set; }

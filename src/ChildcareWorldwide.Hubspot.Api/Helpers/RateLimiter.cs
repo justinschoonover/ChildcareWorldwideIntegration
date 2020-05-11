@@ -8,12 +8,12 @@ namespace ChildcareWorldwide.Hubspot.Api.Helpers
 {
     public sealed class RateLimiter : IDisposable
     {
+        private static TimeSpan s_fudgeFactor = TimeSpan.FromMilliseconds(100);
+
         private readonly int m_maxPerInterval;
         private readonly TimeSpan m_interval;
         private readonly List<DateTime> m_previousRequestsInInterval;
         private readonly SemaphoreSlim m_semaphore = new SemaphoreSlim(1, 1);
-
-        private static TimeSpan s_fudgeFactor = TimeSpan.FromMilliseconds(100);
 
         private RateLimiter(int maxPerInterval, TimeSpan interval)
         {
@@ -47,6 +47,10 @@ namespace ChildcareWorldwide.Hubspot.Api.Helpers
             m_semaphore.Release();
         }
 
-        public void Dispose() => m_semaphore.Release();
+        public void Dispose()
+        {
+            m_semaphore.Release();
+            m_semaphore.Dispose();
+        }
     }
 }

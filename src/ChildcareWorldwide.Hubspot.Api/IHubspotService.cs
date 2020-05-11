@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using ChildcareWorldwide.Hubspot.Api.DomainModels;
 using ChildcareWorldwide.Hubspot.Api.Models;
 
 namespace ChildcareWorldwide.Hubspot.Api
@@ -22,7 +23,7 @@ namespace ChildcareWorldwide.Hubspot.Api
         Task<CrmProperty?> GetCompanyPropertyAsync(string propertyName);
         Task CreateCompanyPropertyAsync(CrmProperty contactProperty);
 
-        Task<Company> GetCompanyAsync();
+        Task<Company?> GetCompanyByDenariAccountIdAsync(string accountId);
         Task CreateCompanyAsync(Company company);
 
         Task<Contact> GetContactAsync();
