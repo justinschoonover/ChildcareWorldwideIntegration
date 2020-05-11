@@ -34,8 +34,8 @@ namespace ChildcareWorldwide.Integration.Manager
                 .AddCookie()
                 .AddGoogle(options =>
                 {
-                    options.ClientId = Configuration["Authentication:Google:ClientId"];
-                    options.ClientSecret = Configuration["Authentication:Google:ClientSecret"];
+                    options.ClientId = Configuration["Authentication_Google_ClientId"];
+                    options.ClientSecret = Configuration["Authentication_Google_ClientSecret"];
                     options.SaveTokens = true;
 
                     options.Scope.Add("https://www.googleapis.com/auth/userinfo.email");

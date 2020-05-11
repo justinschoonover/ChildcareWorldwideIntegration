@@ -12,11 +12,11 @@ namespace ChildcareWorldwide.Integration.Manager.Controllers
     [Authorize]
     public class HomeController : ControllerBase
     {
-        private readonly ILogger<HomeController> _logger;
+        private readonly ILogger<HomeController> m_logger;
 
         public HomeController(ILogger<HomeController> logger)
         {
-            _logger = logger;
+            m_logger = logger;
         }
 
         public IActionResult Index()

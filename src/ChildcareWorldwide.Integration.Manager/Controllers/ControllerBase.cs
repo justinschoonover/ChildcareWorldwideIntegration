@@ -21,7 +21,6 @@ namespace ChildcareWorldwide.Integration.Manager.Controllers
             };
         }
 
-
         protected static ViewModelBase<T> GetPageViewModel<T>(T viewModel, string pageTitle, ClaimsPrincipal user)
             where T : IViewModel
         {

@@ -10,8 +10,6 @@ namespace ChildcareWorldwide.Tools.CloneHubspotProperties
     [SuppressMessage("Design", "CA1052:Static holder types should be Static or NotInheritable")]
     public class Program
     {
-        private static IConfiguration Configuration { get; set; } = default!;
-
         public static async Task Main(string[] args)
         {
             if (args.Length != 2)
@@ -19,11 +17,6 @@ namespace ChildcareWorldwide.Tools.CloneHubspotProperties
                 Console.WriteLine("Usage: CloneHubspotProperties.exe [Production API key] [Sandbox API key]");
                 return;
             }
-
-            var builder = new ConfigurationBuilder();
-            builder.AddUserSecrets<Program>();
-            builder.AddGoogleSecretsConfiguration();
-            Configuration = builder.Build();
 
             await CloneHubspotProperties(args[0], args[1]);
         }
