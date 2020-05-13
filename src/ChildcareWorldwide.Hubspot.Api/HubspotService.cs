@@ -73,10 +73,10 @@ namespace ChildcareWorldwide.Hubspot.Api
             });
 
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await m_client.PostAsync("crm/v3/objects/companies/search", content);
+            var response = await m_client.PostAsync("/crm/v3/objects/companies/search", content);
             response.EnsureSuccessStatusCode();
 
-            var searchResults = JsonConvert.DeserializeObject<ReadCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+            var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
             if (searchResults == null)
                 return null;
 
@@ -100,6 +100,19 @@ namespace ChildcareWorldwide.Hubspot.Api
         public async Task CreateContactAsync(Contact contact)
         {
             throw new NotImplementedException();
+        }
+
+        #endregion
+
+        #region Email Subscription API https://developers.hubspot.com/docs/methods/email/email_subscriptions_overview
+
+        public async Task<bool> IsEmailOptedOutAsync(string email)
+        {
+            var response = await m_client.GetAsync($"/email/public/v1/subscriptions/{email}");
+            response.EnsureSuccessStatusCode();
+
+            var emailSubscriptionStatus = JsonConvert.DeserializeObject<GetEmailSubscriptionStatusResult>(await response.Content.ReadAsStringAsync());
+            return !emailSubscriptionStatus?.Subscribed ?? false;
         }
 
         #endregion
@@ -179,16 +192,16 @@ namespace ChildcareWorldwide.Hubspot.Api
 
         private async IAsyncEnumerable<CrmPropertyGroup> ListCrmPropertyGroupsAsync(string endpoint)
         {
-            var response = await m_client.GetAsync($"crm/v3/properties/{endpoint}/groups");
+            var response = await m_client.GetAsync($"/crm/v3/properties/{endpoint}/groups");
             response.EnsureSuccessStatusCode();
-            var propertyGroups = JsonConvert.DeserializeObject<ReadAllPropertyGroupsResult>(await response.Content.ReadAsStringAsync());
+            var propertyGroups = JsonConvert.DeserializeObject<GetAllPropertyGroupsResult>(await response.Content.ReadAsStringAsync());
             foreach (var propertyGroup in propertyGroups.Results)
                 yield return propertyGroup;
         }
 
         private async Task<CrmPropertyGroup?> GetCrmPropertyGroupAsync(string endpoint, string groupName)
         {
-            var response = await m_client.GetAsync($"crm/v3/properties/{endpoint}/groups/{groupName}");
+            var response = await m_client.GetAsync($"/crm/v3/properties/{endpoint}/groups/{groupName}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 return null;
@@ -215,16 +228,16 @@ namespace ChildcareWorldwide.Hubspot.Api
 
         private async IAsyncEnumerable<CrmProperty> ListCrmPropertiesAsync(string endpoint)
         {
-            var response = await m_client.GetAsync($"crm/v3/properties/{endpoint}");
+            var response = await m_client.GetAsync($"/crm/v3/properties/{endpoint}");
             response.EnsureSuccessStatusCode();
-            var properties = JsonConvert.DeserializeObject<ReadAllPropertiesResult>(await response.Content.ReadAsStringAsync());
+            var properties = JsonConvert.DeserializeObject<GetAllPropertiesResult>(await response.Content.ReadAsStringAsync());
             foreach (var property in properties.Results)
                 yield return property;
         }
 
         private async Task<CrmProperty?> GetCrmPropertyAsync(string endpoint, string propertyName)
         {
-            var response = await m_client.GetAsync($"crm/v3/properties/{endpoint}/{propertyName}");
+            var response = await m_client.GetAsync($"/crm/v3/properties/{endpoint}/{propertyName}");
 
             if (response.StatusCode == System.Net.HttpStatusCode.NotFound)
                 return null;

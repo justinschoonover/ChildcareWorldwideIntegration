@@ -28,5 +28,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
         Task<Contact> GetContactAsync();
         Task CreateContactAsync(Contact contact);
+
+        Task<bool> IsEmailOptedOutAsync(string email);
     }
 }

@@ -3,8 +3,8 @@ using ChildcareWorldwide.Hubspot.Api.Models;
 
 namespace ChildcareWorldwide.Hubspot.Api.Responses
 {
-    public sealed class ReadAllPropertiesResult
+    public sealed class GetAllPropertyGroupsResult
     {
-        public List<CrmProperty> Results { get; } = new List<CrmProperty>();
+        public List<CrmPropertyGroup> Results { get; } = new List<CrmPropertyGroup>();
     }
 }
