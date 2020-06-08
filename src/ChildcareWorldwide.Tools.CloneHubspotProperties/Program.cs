@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Google.Api.Configuration;
@@ -23,8 +24,18 @@ namespace ChildcareWorldwide.Tools.CloneHubspotProperties
 
         public static async Task CloneHubspotProperties(string productionApiKey, string sandboxApiKey)
         {
-            using var productionService = new HubspotService(productionApiKey);
-            using var sandboxService = new HubspotService(sandboxApiKey);
+            using var productionService = new HubspotService(new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { "HubspotApiKey", productionApiKey },
+                })
+                .Build());
+            using var sandboxService = new HubspotService(new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string>
+                {
+                    { "HubspotApiKey", sandboxApiKey },
+                })
+                .Build());
 
             Console.WriteLine("Cloning Custom Contact Property Groups...");
             await foreach (var propertyGroup in productionService.ListContactPropertyGroupsAsync())

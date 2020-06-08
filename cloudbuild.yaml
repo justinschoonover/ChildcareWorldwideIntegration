@@ -1,12 +1,23 @@
 steps:
-# Build the container image
+# Build the integration manager image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['build', '-t', 'gcr.io/$PROJECT_ID/ccwintegration', '-f', 'src/ChildcareWorldwide.Integration.Manager/Dockerfile', '.']
-# Push the container image to Container Registry
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/ccwintegrationmanager', '-f', 'src/ChildcareWorldwide.Integration.Manager/Dockerfile', '.']
+# Build the integration subscriber image
 - name: 'gcr.io/cloud-builders/docker'
-  args: ['push', 'gcr.io/$PROJECT_ID/ccwintegration']
-# Deploy container image to Cloud Run
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/ccwintegrationsubscriber', '-f', 'src/ChildcareWorldwide.Integration.Subscriber/Dockerfile', '.']
+
+# Push the container images to Container Registry
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/ccwintegrationmanager']
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['push', 'gcr.io/$PROJECT_ID/ccwintegrationsubscriber']
+
+
+# Deploy container images to Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
-  args: ['run', 'deploy', 'ccw-integration-manager', '--image', 'gcr.io/$PROJECT_ID/ccwintegration', '--region', 'us-west1', '--platform', 'managed', '--allow-unauthenticated']
+  args: ['run', 'deploy', 'ccw-integration-manager', '--image', 'gcr.io/$PROJECT_ID/ccwintegrationmanager', '--region', 'us-west1', '--platform', 'managed', '--allow-unauthenticated']
+
+
 images:
-- 'gcr.io/$PROJECT_ID/ccwintegration'
+- 'gcr.io/$PROJECT_ID/ccwintegrationmanager'
+- 'gcr.io/$PROJECT_ID/ccwintegrationsubscriber'

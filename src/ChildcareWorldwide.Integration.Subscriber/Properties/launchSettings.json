@@ -1,0 +1,10 @@
+﻿{
+  "profiles": {
+    "ChildcareWorldwide.Integration.Subscriber": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

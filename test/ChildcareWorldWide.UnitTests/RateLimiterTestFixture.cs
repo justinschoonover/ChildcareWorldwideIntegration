@@ -1,23 +1,20 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using ChildcareWorldwide.Hubspot.Api.Helpers;
 using NUnit.Framework;
+using RateLimiter;
 
 namespace ChildCareWorldWide.UnitTests
 {
+    [TestFixture]
+    [Parallelizable(ParallelScope.All)]
     public class RateLimiterTestFixture
     {
-        [SetUp]
-        public void Setup()
-        {
-        }
-
         [Test]
         public async Task TestRateLimitingAsync()
         {
             // 10 requests per 1 seconds
-            var ratelimiter = RateLimiter.MaxRequestsPerInterval(10, TimeSpan.FromSeconds(1));
+            var ratelimiter = SimpleRateLimiter.MaxRequestsPerInterval(10, TimeSpan.FromSeconds(1));
             var stopwatch = new Stopwatch();
             var random = new Random();
 

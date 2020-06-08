@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\..\src\ChildcareWorldwide.Hubspot.Api\ChildcareWorldwide.Hubspot.Api.csproj" />
+    <ProjectReference Include="..\..\src\RateLimiter\RateLimiter.csproj" />
   </ItemGroup>
 
 </Project>

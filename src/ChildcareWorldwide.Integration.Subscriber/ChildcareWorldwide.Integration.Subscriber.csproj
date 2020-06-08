@@ -1,0 +1,27 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>dotnet-ChildcareWorldwide.Integration.Subscriber-60405A65-F05A-43BD-8190-24A02A459DE2</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\ChildcareWorldwide.Denari.Api\ChildcareWorldwide.Denari.Api.csproj" />
+    <ProjectReference Include="..\ChildcareWorldwide.Google.Api\ChildcareWorldwide.Google.Api.csproj" />
+    <ProjectReference Include="..\ChildcareWorldwide.Hubspot.Api\ChildcareWorldwide.Hubspot.Api.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Google.Cloud.Logging.NLog" Version="3.0.1" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="3.1.4" />
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.1.4" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.9.2" />
+    <PackageReference Include="NLog" Version="4.7.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Update="nlog.config">
+      <ExcludeFromSingleFile>true</ExcludeFromSingleFile>
+    </Content>
+  </ItemGroup>
+</Project>

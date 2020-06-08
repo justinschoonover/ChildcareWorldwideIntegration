@@ -2,32 +2,46 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Runtime.CompilerServices;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Denari.Api.Models;
+using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using NLog;
+using RateLimiter;
 
 namespace ChildcareWorldwide.Denari.Api
 {
-    public sealed class DrapiService : IDrapiService
+    public sealed class DrapiService : IDrapiService, IDisposable
     {
-        private readonly Uri m_baseUri = new Uri("https://api.denarionline.com/v1/api/");
-        private readonly string m_apiKey;
+        private readonly HttpClient m_client = default!;
+        private readonly Logger m_logger;
 
-        public DrapiService(string denariApiKey = "")
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
+        public DrapiService(IConfiguration configuration)
         {
-            m_apiKey = denariApiKey;
+            m_logger = LogManager.GetCurrentClassLogger();
+            m_client = new HttpClient(new DrapiHttpClientHandler()) { BaseAddress = new Uri("https://api.denarionline.com/v1/api/") };
+            m_client.DefaultRequestHeaders.Add("drapi-authorization", configuration["DenariApiKey"]);
         }
 
-        public async Task<(Donor? donor, string? rawJson)> GetDonorByAccountAsync(string accountNumber)
+        public void Dispose()
         {
-            using HttpClient client = GetClient();
+            m_client.Dispose();
+        }
+
+        public async Task<(Donor? donor, string? rawJson)> GetDonorByAccountAsync(string accountNumber, CancellationToken cancellationToken = default)
+        {
+            m_logger.Info($"Getting Denari donor information for donor # \"{accountNumber}\"");
+
             using var filterJson = SerializeJsonForDrapi(new DonorList
             {
-                PageSize = 10,
+                PageSize = 1,
                 PageCount = 0,
-                CurrentPage = 1,
+                CurrentPage = 0,
                 Order = string.Empty,
                 Filter = new DrapiFilter
                 {
@@ -53,45 +67,50 @@ namespace ChildcareWorldwide.Denari.Api
                     },
                 },
             });
-
-            var response = await client.PostAsync("Donor/firstpage", filterJson);
+            m_logger.Debug("Requesting from Denari API...");
+            var response = await m_client.PostAsync("Donor/firstpage", filterJson);
+            m_logger.Debug(response);
             response.EnsureSuccessStatusCode();
 
             var responseJson = await response.Content.ReadAsStringAsync();
+            m_logger.Debug(responseJson);
             var donors = JsonConvert.DeserializeObject<DonorList>(responseJson);
             return (donors?.Data.FirstOrDefault(), responseJson);
         }
 
-        public async IAsyncEnumerable<Donor> GetDonorsAsync()
+        public async IAsyncEnumerable<Donor> GetDonorsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
-            using HttpClient client = GetClient();
-            using var json = SerializeJsonForDrapi(new DonorList
-            {
-                PageSize = 500,
-                PageCount = 0,
-                CurrentPage = 1,
-                Order = string.Empty,
-                Filter = new DrapiFilter(),
-            });
+            const int pageSize = 1000;
+            int currentPage = 0;
+            int pageCount = 1;
 
-            // TODO: add paging
-            var response = await client.PostAsync("Donor/firstpage", json);
-            response.EnsureSuccessStatusCode();
-            var donors = JsonConvert.DeserializeObject<DonorList>(await response.Content.ReadAsStringAsync());
-            foreach (var donor in donors.Data)
+            while (currentPage < pageCount)
             {
-                yield return donor;
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                using var json = SerializeJsonForDrapi(new DonorList
+                {
+                    PageSize = pageSize,
+                    PageCount = pageCount,
+                    CurrentPage = currentPage,
+                    Order = string.Empty,
+                    Filter = new DrapiFilter(),
+                });
+
+                string endpoint = currentPage == 0 ? "Donor/firstpage" : "Donor/nextpage";
+                var response = await m_client.PostAsync(endpoint, json);
+                response.EnsureSuccessStatusCode();
+
+                var donorList = JsonConvert.DeserializeObject<DonorList>(await response.Content.ReadAsStringAsync());
+                pageCount = donorList.PageCount;
+                currentPage = donorList.CurrentPage;
+                foreach (Donor donor in donorList.Data.Where(d => d.Account != "-1"))
+                    yield return donor;
             }
         }
 
-        private HttpClient GetClient()
-        {
-            var client = new HttpClient() { BaseAddress = m_baseUri };
-            client.DefaultRequestHeaders.Add("drapi-authorization", m_apiKey);
-            return client;
-        }
-
-        private StringContent SerializeJsonForDrapi(DonorList requestFilter)
+        private static StringContent SerializeJsonForDrapi(DonorList requestFilter)
         {
             var json = JsonConvert.SerializeObject(requestFilter, Formatting.Indented, new JsonSerializerSettings
             {
@@ -104,6 +123,25 @@ namespace ChildcareWorldwide.Denari.Api
 
             // note the awkward JSON syntax - wrapped in quotes and using single quotes for identifiers
             return new StringContent($"\"{json.Replace("\"", "'", StringComparison.InvariantCultureIgnoreCase)}\"", Encoding.UTF8, "application/json");
+        }
+
+        private sealed class DrapiHttpClientHandler : DelegatingHandler
+        {
+            private readonly SimpleRateLimiter m_rateLimiter;
+
+            public DrapiHttpClientHandler()
+            {
+                InnerHandler = new HttpClientHandler();
+
+                // Denari API doesn't publish rate limits. Impose a limit of 100 requests every 10 seconds anyways.
+                m_rateLimiter = SimpleRateLimiter.MaxRequestsPerInterval(100, TimeSpan.FromSeconds(10));
+            }
+
+            protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
+            {
+                await m_rateLimiter.WaitForReady();
+                return await base.SendAsync(request, cancellationToken);
+            }
         }
     }
 }

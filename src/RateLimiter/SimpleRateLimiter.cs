@@ -4,25 +4,25 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace ChildcareWorldwide.Hubspot.Api.Helpers
+namespace RateLimiter
 {
-    public sealed class RateLimiter : IDisposable
+    public sealed class SimpleRateLimiter : IDisposable
     {
-        private static TimeSpan s_fudgeFactor = TimeSpan.FromMilliseconds(100);
+        private static readonly TimeSpan FudgeFactor = TimeSpan.FromMilliseconds(100);
 
         private readonly int m_maxPerInterval;
         private readonly TimeSpan m_interval;
         private readonly List<DateTime> m_previousRequestsInInterval;
         private readonly SemaphoreSlim m_semaphore = new SemaphoreSlim(1, 1);
 
-        private RateLimiter(int maxPerInterval, TimeSpan interval)
+        private SimpleRateLimiter(int maxPerInterval, TimeSpan interval)
         {
             m_maxPerInterval = maxPerInterval;
             m_interval = interval;
             m_previousRequestsInInterval = new List<DateTime>();
         }
 
-        public static RateLimiter MaxRequestsPerInterval(int maxRequests, TimeSpan interval) => new RateLimiter(maxRequests, interval);
+        public static SimpleRateLimiter MaxRequestsPerInterval(int maxRequests, TimeSpan interval) => new SimpleRateLimiter(maxRequests, interval);
 
         public async Task WaitForReady(CancellationToken cancellationToken = default)
         {
@@ -41,7 +41,7 @@ namespace ChildcareWorldwide.Hubspot.Api.Helpers
                 return;
             }
 
-            var timeToWait = m_previousRequestsInInterval.Min().Add(m_interval) - now + s_fudgeFactor;
+            var timeToWait = m_previousRequestsInInterval.Min().Add(m_interval) - now + FudgeFactor;
             await Task.Delay(timeToWait, cancellationToken);
 
             m_semaphore.Release();

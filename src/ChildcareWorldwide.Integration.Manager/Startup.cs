@@ -1,6 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Denari.Api;
-using ChildcareWorldwide.Google.Api.Helpers;
+using ChildcareWorldwide.Google.Api;
 using ChildcareWorldwide.Hubspot.Api;
 using Google.Cloud.Diagnostics.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.Logging;
 
 namespace ChildcareWorldwide.Integration.Manager
 {
@@ -28,6 +27,7 @@ namespace ChildcareWorldwide.Integration.Manager
         public void ConfigureServices(IServiceCollection services)
         {
             services.AddControllersWithViews();
+            services.AddHealthChecks();
 
             services.AddAuthentication(options =>
                 {
@@ -46,11 +46,12 @@ namespace ChildcareWorldwide.Integration.Manager
                     options.ClaimActions.MapJsonKey("urn:google:email", "email", "string");
                 });
 
-            services.AddSingleton<IDrapiService>(sp => new DrapiService(Configuration["DenariApiKey"]));
-            services.AddSingleton<IHubspotService>(sp => new HubspotService(Configuration["HubspotApiKey"]));
+            services.AddSingleton<IDrapiService, DrapiService>();
+            services.AddSingleton<IHubspotService, HubspotService>();
+            services.AddSingleton<IGoogleCloudPubSubService, GoogleCloudPubSubService>();
         }
 
-        public void Configure(IApplicationBuilder app, IWebHostEnvironment env, ILoggerFactory loggerFactory)
+        public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
             if (env.IsDevelopment())
             {
@@ -58,9 +59,6 @@ namespace ChildcareWorldwide.Integration.Manager
             }
             else
             {
-                // Log to Google
-                loggerFactory.AddGoogle(app.ApplicationServices, GoogleComputeEngineHelper.GetCurrentProjectIdAsync().GetAwaiter().GetResult());
-
                 // force HTTPS in the cloud run environment
                 app.Use(async (context, next) =>
                 {
@@ -84,6 +82,8 @@ namespace ChildcareWorldwide.Integration.Manager
 
             app.UseEndpoints(endpoints =>
             {
+                endpoints.MapHealthChecks("/health").RequireAuthorization();
+
                 endpoints.MapControllerRoute(
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");

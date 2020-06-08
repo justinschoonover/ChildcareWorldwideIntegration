@@ -1,6 +1,6 @@
 namespace ChildcareWorldwide.Integration.Manager.Models
 {
-    public class ErrorViewModel : MetaDataViewModel
+    public class ErrorViewModel : ViewModelBase
     {
         public string? RequestId { get; set; }
 

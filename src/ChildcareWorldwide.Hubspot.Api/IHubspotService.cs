@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Hubspot.Api.DomainModels;
 using ChildcareWorldwide.Hubspot.Api.Models;
@@ -7,28 +8,28 @@ namespace ChildcareWorldwide.Hubspot.Api
 {
     public interface IHubspotService
     {
-        IAsyncEnumerable<CrmPropertyGroup> ListContactPropertyGroupsAsync();
-        Task<CrmPropertyGroup?> GetContactPropertyGroupAsync(string groupName);
-        Task CreateContactPropertyGroupAsync(CrmPropertyGroup propertyGroup);
+        IAsyncEnumerable<CrmPropertyGroup> ListContactPropertyGroupsAsync(CancellationToken cancellationToken = default);
+        Task<CrmPropertyGroup?> GetContactPropertyGroupAsync(string groupName, CancellationToken cancellationToken = default);
+        Task CreateContactPropertyGroupAsync(CrmPropertyGroup propertyGroup, CancellationToken cancellationToken = default);
 
-        IAsyncEnumerable<CrmProperty> ListContactPropertiesAsync();
-        Task<CrmProperty?> GetContactPropertyAsync(string propertyName);
-        Task CreateContactPropertyAsync(CrmProperty contactProperty);
+        IAsyncEnumerable<CrmProperty> ListContactPropertiesAsync(CancellationToken cancellationToken = default);
+        Task<CrmProperty?> GetContactPropertyAsync(string propertyName, CancellationToken cancellationToken = default);
+        Task CreateContactPropertyAsync(CrmProperty contactProperty, CancellationToken cancellationToken = default);
 
-        IAsyncEnumerable<CrmPropertyGroup> ListCompanyPropertyGroupsAsync();
-        Task<CrmPropertyGroup?> GetCompanyPropertyGroupAsync(string groupName);
-        Task CreateCompanyPropertyGroupAsync(CrmPropertyGroup propertyGroup);
+        IAsyncEnumerable<CrmPropertyGroup> ListCompanyPropertyGroupsAsync(CancellationToken cancellationToken = default);
+        Task<CrmPropertyGroup?> GetCompanyPropertyGroupAsync(string groupName, CancellationToken cancellationToken = default);
+        Task CreateCompanyPropertyGroupAsync(CrmPropertyGroup propertyGroup, CancellationToken cancellationToken = default);
 
-        IAsyncEnumerable<CrmProperty> ListCompanyPropertiesAsync();
-        Task<CrmProperty?> GetCompanyPropertyAsync(string propertyName);
-        Task CreateCompanyPropertyAsync(CrmProperty contactProperty);
+        IAsyncEnumerable<CrmProperty> ListCompanyPropertiesAsync(CancellationToken cancellationToken = default);
+        Task<CrmProperty?> GetCompanyPropertyAsync(string propertyName, CancellationToken cancellationToken = default);
+        Task CreateCompanyPropertyAsync(CrmProperty contactProperty, CancellationToken cancellationToken = default);
 
-        Task<Company?> GetCompanyByDenariAccountIdAsync(string accountId);
-        Task CreateCompanyAsync(Company company);
+        Task<Company?> GetCompanyByDenariAccountIdAsync(string accountId, CancellationToken cancellationToken = default);
+        Task<Company> CreateOrUpdateCompanyAsync(Company company, CancellationToken cancellationToken = default);
 
-        Task<Contact> GetContactAsync();
-        Task CreateContactAsync(Contact contact);
+        Task<Contact?> GetContactByEmailAsync(string email, CancellationToken cancellationToken = default);
+        Task<Contact> CreateOrUpdateContactAsync(Contact contact, CancellationToken cancellationToken = default);
 
-        Task<bool> IsEmailOptedOutAsync(string email);
+        Task<IReadOnlyList<string>> GetOptedOutEmailsAsync(CancellationToken cancellationToken = default);
     }
 }

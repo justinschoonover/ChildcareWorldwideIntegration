@@ -1,5 +1,7 @@
-﻿using System.Threading.Tasks;
-using ChildcareWorldwide.Hubspot.Api;
+﻿using System;
+using System.Threading.Tasks;
+using ChildcareWorldwide.Google.Api;
+using ChildcareWorldwide.Google.Api.PubSub;
 using ChildcareWorldwide.Integration.Manager.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,19 +10,17 @@ namespace ChildcareWorldwide.Integration.Manager.Controllers
     public class HubspotController : ControllerBase
     {
         [HttpGet]
-        public IActionResult CloneProperties() => View(GetPageViewModel(new HubspotCloneProperties(), pageTitle: "Hubspot Clone Custom Properties", HttpContext.User));
+        public IActionResult ImportFromDenari() => View(GetPageViewModel(new HubspotImportFromDenari(), pageTitle: "Hubspot Import From Denari", HttpContext.User));
 
         [HttpPost]
-        public async Task<IActionResult> ClonePropertiesAsync([FromServices] IHubspotService hubspotService, [FromForm] string apiKey)
+        public async Task<IActionResult> ImportFromDenariAsync([FromServices] IGoogleCloudPubSubService pubSubService)
         {
-            await Task.Delay(2000);
-
-            var viewModel = new HubspotCloneProperties
+            var viewModel = new HubspotImportFromDenari
             {
-                SandboxApiKey = apiKey,
+                ImportMessageId = await pubSubService.PublishMessageAsync(Topics.HubspotBeginImport, Guid.NewGuid().ToString()),
             };
 
-            return View(GetPageViewModel(viewModel, pageTitle: "Hubspot Clone Custom Properties", HttpContext.User));
+            return View(GetPageViewModel(viewModel, pageTitle: "Hubspot Import From Denari", HttpContext.User));
         }
     }
 }
