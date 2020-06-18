@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Google.Api.Helpers;
 using ChildcareWorldwide.Google.Api.PubSub;
-using Google.Api.Gax;
 using Google.Cloud.PubSub.V1;
 using Google.Protobuf.WellKnownTypes;
 using Grpc.Core;
