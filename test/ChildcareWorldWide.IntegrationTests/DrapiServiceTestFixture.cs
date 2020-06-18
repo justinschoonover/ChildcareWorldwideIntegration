@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using NUnit.Framework;
+using NUnit.Framework.Internal;
 
 namespace ChildcareWorldWide.IntegrationTests
 {
@@ -24,17 +25,20 @@ namespace ChildcareWorldWide.IntegrationTests
         }
 
         [Test]
+        public async Task TestGetClassificationsForDonorAsync()
+        {
+            const string testDenariDonorKey = "C4113F1159";
+            var classifications = await DenariService.GetClassificationsForDonorAsync(testDenariDonorKey).ToListAsync();
+            Assert.True(classifications.All(c => c != null));
+            Assert.True(classifications.All(c => c.DonorKey == testDenariDonorKey));
+        }
+
+        [Test]
         public async Task TestGetDonorsAsync()
         {
             var donors = await DenariService.GetDonorsAsync().ToListAsync();
+            Assert.True(donors.All(d => d != null));
             Assert.True(donors.Any(d => d.Account == "112196"));
-            foreach (var donor in donors)
-            {
-                Assert.NotNull(donor);
-            }
-
-            foreach (var country in donors.Select(d => d.Country).Distinct())
-                Console.WriteLine(country);
         }
     }
 }

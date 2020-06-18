@@ -110,7 +110,7 @@ namespace ChildcareWorldwide.Denari.Api
             }
         }
 
-        public async IAsyncEnumerable<DonorClassification> GetClassificationsForDonor(string donorKey, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        public async IAsyncEnumerable<DonorClassification> GetClassificationsForDonorAsync(string donorKey, [EnumeratorCancellation] CancellationToken cancellationToken = default)
         {
             m_logger.Info($"Getting Denari donor classifications for donor ID \"{donorKey}\"");
 
