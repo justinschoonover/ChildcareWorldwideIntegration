@@ -95,7 +95,7 @@ namespace ChildcareWorldwide.Google.Api
                         {
                             TopicAsTopicName = new TopicName(m_projectId, topicId),
                             SubscriptionName = subscriptionName,
-                            AckDeadlineSeconds = 300,
+                            AckDeadlineSeconds = 30,
                             ExpirationPolicy = new ExpirationPolicy
                             {
                                 Ttl = Duration.FromTimeSpan(TimeSpan.FromDays(365)),

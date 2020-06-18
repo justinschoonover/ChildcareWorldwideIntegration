@@ -35,6 +35,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
                     services.AddSingleton<IDrapiService, DrapiService>();
                     services.AddSingleton<IHubspotService, HubspotService>();
                     services.AddSingleton<IGoogleCloudPubSubService, GoogleCloudPubSubService>();
+                    services.AddSingleton<IGoogleCloudFirestoreService, GoogleCloudFirestoreService>();
                     services.AddMemoryCache();
                     services.AddHostedService<Worker>();
                 }).ConfigureLogging(logging =>

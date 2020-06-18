@@ -48,17 +48,34 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
             return JsonConvert.SerializeObject(new JObject(new JProperty("properties", properties)), Formatting.Indented, new DateTimeJsonConverter(), new DecimalJsonConverter());
         }
 
-        public static string GetPropertiesForUpdate<T>(T updated, T existing)
+        public static bool GetPropertiesForUpdate<T>(T updated, T existing, out string result)
         {
             JObject properties = new JObject();
             var existingProperties = GetDomainModelProperties(existing).ToDictionary(p => p.PropertyInfo.Name, p => p);
             foreach (var (property, jsonProperty) in GetDomainModelProperties(updated))
             {
-                if (property.GetValue(updated) != null && property.GetValue(updated) != existingProperties[property.Name].PropertyInfo.GetValue(existing))
+                if (!property.IsValueNullOrEmpty(updated) && !property.GetValue(updated).Equals(existingProperties[property.Name].PropertyInfo.GetValue(existing)))
                     properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLower(CultureInfo.InvariantCulture), property.GetValue(updated)));
             }
 
-            return new JObject(new JProperty("properties", properties)).ToString();
+            result = new JObject(new JProperty("properties", properties)).ToString();
+            return properties.Count > 0;
+        }
+
+        public static List<string> GetPropertyNames<T>(T domainModel)
+        {
+            return GetDomainModelProperties(domainModel).Select(p => p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name).ToList();
+        }
+
+        private static bool IsValueNullOrEmpty<T>([NotNullWhen(false)] this PropertyInfo property, T instance)
+        {
+            if (property.GetValue(instance) == null)
+                return true;
+
+            if ((Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType) == typeof(string) && property.GetValue(instance).Equals(string.Empty))
+                return true;
+
+            return false;
         }
 
         private static bool TrySetValue<T>(T domainModel, string name, string value)
