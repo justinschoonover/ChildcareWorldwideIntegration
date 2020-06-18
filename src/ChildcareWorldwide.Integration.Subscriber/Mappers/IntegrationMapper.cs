@@ -92,8 +92,8 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
                 Gifts4YearsAgo = donor.Gifts4YearsAgo,
                 International = IsForeignCountry(donor.Country),
                 Gender = donor.Gender,
-                DateOfBirth = donor.Dob,
-                DateOfBirthSpouse = donor.DobSpouse,
+                DateOfBirth = donor.Dob.SpecifyUtc(),
+                DateOfBirthSpouse = donor.DobSpouse.SpecifyUtc(),
                 // Jurisdiction = donor.Jurisdiction,
                 Notes = string.Concat("\n", donor.Notes),
             };
