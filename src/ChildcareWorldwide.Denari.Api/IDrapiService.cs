@@ -9,5 +9,6 @@ namespace ChildcareWorldwide.Denari.Api
     {
         Task<(Donor? donor, string? rawJson)> GetDonorByAccountAsync(string accountNumber, CancellationToken cancellationToken = default);
         IAsyncEnumerable<Donor> GetDonorsAsync(CancellationToken cancellationToken = default);
+        IAsyncEnumerable<DonorClassification> GetClassificationsForDonor(string donorKey, CancellationToken cancellationToken = default);
     }
 }

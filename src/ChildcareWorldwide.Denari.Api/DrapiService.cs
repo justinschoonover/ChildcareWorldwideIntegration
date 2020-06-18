@@ -37,7 +37,7 @@ namespace ChildcareWorldwide.Denari.Api
         {
             m_logger.Info($"Getting Denari donor information for donor # \"{accountNumber}\"");
 
-            using var filterJson = SerializeJsonForDrapi(new DonorList
+            using var filterJson = SerializeJsonForDrapi(new DonorList<Donor>
             {
                 PageSize = 1,
                 PageCount = 0,
@@ -74,7 +74,7 @@ namespace ChildcareWorldwide.Denari.Api
 
             var responseJson = await response.Content.ReadAsStringAsync();
             m_logger.Debug(responseJson);
-            var donors = JsonConvert.DeserializeObject<DonorList>(responseJson);
+            var donors = JsonConvert.DeserializeObject<DonorList<Donor>>(responseJson);
             return (donors?.Data.FirstOrDefault(), responseJson);
         }
 
@@ -89,7 +89,7 @@ namespace ChildcareWorldwide.Denari.Api
                 if (cancellationToken.IsCancellationRequested)
                     break;
 
-                using var json = SerializeJsonForDrapi(new DonorList
+                using var json = SerializeJsonForDrapi(new DonorList<Donor>
                 {
                     PageSize = pageSize,
                     PageCount = pageCount,
@@ -102,7 +102,7 @@ namespace ChildcareWorldwide.Denari.Api
                 var response = await m_client.PostAsync(endpoint, json);
                 response.EnsureSuccessStatusCode();
 
-                var donorList = JsonConvert.DeserializeObject<DonorList>(await response.Content.ReadAsStringAsync());
+                var donorList = JsonConvert.DeserializeObject<DonorList<Donor>>(await response.Content.ReadAsStringAsync());
                 pageCount = donorList.PageCount;
                 currentPage = donorList.CurrentPage;
                 foreach (Donor donor in donorList.Data.Where(d => d.Account != "-1"))
@@ -110,7 +110,30 @@ namespace ChildcareWorldwide.Denari.Api
             }
         }
 
-        private static StringContent SerializeJsonForDrapi(DonorList requestFilter)
+        public async IAsyncEnumerable<DonorClassification> GetClassificationsForDonor(string donorKey, [EnumeratorCancellation] CancellationToken cancellationToken = default)
+        {
+            m_logger.Info($"Getting Denari donor classifications for donor ID \"{donorKey}\"");
+
+            int currentPage = 0;
+            int pageCount = 1;
+
+            while (currentPage < pageCount)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    break;
+
+                var response = await m_client.GetAsync($"Donor/{donorKey}/classification");
+                response.EnsureSuccessStatusCode();
+
+                var donorList = JsonConvert.DeserializeObject<DonorList<DonorClassification>>(await response.Content.ReadAsStringAsync());
+                pageCount = donorList.PageCount;
+                currentPage = donorList.CurrentPage;
+                foreach (DonorClassification donorClassification in donorList.Data)
+                    yield return donorClassification;
+            }
+        }
+
+        private static StringContent SerializeJsonForDrapi<T>(DonorList<T> requestFilter)
         {
             var json = JsonConvert.SerializeObject(requestFilter, Formatting.Indented, new JsonSerializerSettings
             {

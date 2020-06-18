@@ -2,7 +2,7 @@
 
 namespace ChildcareWorldwide.Denari.Api.Models
 {
-    public sealed class DonorList
+    public sealed class DonorList<T>
     {
         public string ResultCode { get; set; } = default!;
         public string Message { get; set; } = default!;
@@ -15,6 +15,6 @@ namespace ChildcareWorldwide.Denari.Api.Models
         public string Order { get; set; } = default!;
         public List<string> Fields { get; } = new List<string>();
         public DrapiFilter Filter { get; set; } = default!;
-        public List<Donor> Data { get; } = new List<Donor>();
+        public List<T> Data { get; } = new List<T>();
     }
 }
