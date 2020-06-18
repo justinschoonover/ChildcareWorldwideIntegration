@@ -2,6 +2,7 @@
 Syncs data between the Denari Online API (DRAPI) and HubSpot
 
 ## Building & Deploying
+![.NET Core](https://github.com/justinschoonover/ChildcareWorldwideIntegration/workflows/.NET%20Core/badge.svg)
 ```
 gcloud builds submit
 ```
