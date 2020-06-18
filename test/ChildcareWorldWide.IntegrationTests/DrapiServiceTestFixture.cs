@@ -34,6 +34,7 @@ namespace ChildcareWorldWide.IntegrationTests
         }
 
         [Test]
+        [Explicit("Takes 30+ seconds to run.")]
         public async Task TestGetDonorsAsync()
         {
             var donors = await DenariService.GetDonorsAsync().ToListAsync();
