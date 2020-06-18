@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using ChildcareWorldwide.Denari.Api.Models;
 using ChildcareWorldwide.Hubspot.Api.DomainModels;
@@ -65,7 +64,7 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
                 SecondaryContact = donor.Spouse,
                 ContactName = donor.ContactName,
                 DenariSalutation = donor.Salutation,
-                // RecordType = donor.Type,
+                DonorType = donor.Type,
                 StreetAddress = donor.Street,
                 StreetAddress2 = donor.Street2,
                 City = donor.City,

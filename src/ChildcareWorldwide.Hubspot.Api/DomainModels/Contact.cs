@@ -28,6 +28,9 @@ namespace ChildcareWorldwide.Hubspot.Api.DomainModels
         [JsonProperty("esalutation")]
         public string? ESalutation { get; set; }
 
+        [JsonProperty("industry")]
+        public string? DonorType { get; set; }
+
         public string? Organization { get; set; }
 
         [JsonProperty("address")]
