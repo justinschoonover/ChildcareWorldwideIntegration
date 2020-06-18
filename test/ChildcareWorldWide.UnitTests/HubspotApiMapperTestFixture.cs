@@ -48,7 +48,7 @@ namespace ChildcareWorldWide.UnitTests
                 DenariAccountId = "54321",
             };
 
-            string properties = DomainModelMapper.GetPropertiesForUpdate(updated, existing);
+            DomainModelMapper.GetPropertiesForUpdate(updated, existing, out string properties);
             Assert.NotNull(properties);
 
             // new property should be present, not old one
