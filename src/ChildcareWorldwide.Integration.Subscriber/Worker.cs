@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Net.Mail;
 using System.Threading;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Denari.Api;
@@ -23,6 +22,10 @@ namespace ChildcareWorldwide.Integration.Subscriber
     public class Worker : BackgroundService
     {
         private const string OptOutCacheKey = "EMAIL_OPT_OUT";
+
+        // limit number of messages that are being processed by subscribers
+        private readonly SemaphoreSlim m_semaphore = new SemaphoreSlim(10);
+        private readonly CancellationTokenSource m_semaphoreCts = new CancellationTokenSource(TimeSpan.FromSeconds(10));
 
         private readonly Logger m_logger;
         private readonly IDrapiService m_drapiService;
@@ -50,9 +53,9 @@ namespace ChildcareWorldwide.Integration.Subscriber
             m_cache.Set(OptOutCacheKey, await m_hubspotService.GetOptedOutEmailsAsync(), TimeSpan.FromMinutes(120));
 
             // start subscribers
-            await m_googleCloudPubSubService.StartSubscriberAsync(Subscriptions.HubspotGetDonorsForImport.Subscription, QueueDonorsForImportHandler());
-            await m_googleCloudPubSubService.StartSubscriberAsync(Subscriptions.HubspotImportDonorAsCompany.Subscription, ImportCompanyFromDonorHandler());
-            await m_googleCloudPubSubService.StartSubscriberAsync(Subscriptions.HubspotImportDonorAsContact.Subscription, ImportContactFromDonorHandler());
+            await StartSubscriberWithErrorHandlingAsync(Subscriptions.HubspotGetDonorsForImport, QueueDonorsForImportHandler());
+            await StartSubscriberWithErrorHandlingAsync(Subscriptions.HubspotImportDonorAsCompany, ImportCompanyFromDonorHandler());
+            await StartSubscriberWithErrorHandlingAsync(Subscriptions.HubspotImportDonorAsContact, ImportContactFromDonorHandler());
 
             // do the thing!
             while (!cancellationToken.IsCancellationRequested)
@@ -67,32 +70,6 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 await m_googleCloudPubSubService.StopSubscriberAsync(subscriptionId, cancellationToken);
         }
 
-        private Func<PubsubMessage, CancellationToken, Task<SubscriberClient.Reply>> ProcessQueueWithErrorHandlingAsync(Func<Func<PubsubMessage, CancellationToken, Task<SubscriberClient.Reply>>> handler)
-        {
-            const int maxTries = 3;
-            int tryCount = 0;
-
-            try
-            {
-                return handler();
-            }
-            catch (Exception e)
-            {
-                tryCount++;
-
-                // retry if we've not exceeded the limit or it's likely this is a recoverable issue
-                if (tryCount < maxTries && IsLikelyTemporaryFault(e))
-                    return (msg, cancellationToken) => Task.FromResult(SubscriberClient.Reply.Nack);
-
-                // TODO: insert errors into a database
-                return (msg, cancellationToken) =>
-                {
-                    m_logger.Error(e, $"Fatally could not process message {msg.MessageId}.");
-                    return Task.FromResult(SubscriberClient.Reply.Ack);
-                };
-            }
-        }
-
         private static bool IsLikelyTemporaryFault(Exception exception)
         {
             return exception switch
@@ -103,8 +80,46 @@ namespace ChildcareWorldwide.Integration.Subscriber
             };
         }
 
+        private Task StartSubscriberWithErrorHandlingAsync(
+            (string Topic, string Subscription) config,
+            Func<PubsubMessage, CancellationToken, Task<SubscriberClient.Reply>> handler)
+        {
+            return m_googleCloudPubSubService.StartSubscriberAsync(config.Subscription, (msg, cancellationToken) =>
+            {
+                const int maxTries = 3;
+                int tryCount = 0;
+
+                try
+                {
+                    return handler(msg, cancellationToken);
+                }
+                catch (Exception e)
+                {
+                    tryCount++;
+
+                    // retry if we've not exceeded the limit or it's likely this is a recoverable issue
+                    if (tryCount < maxTries && IsLikelyTemporaryFault(e))
+                        return Task.FromResult(SubscriberClient.Reply.Nack);
+
+                    // TODO: insert errors into a database
+                    m_logger.Error(e, $"Fatally could not process message {msg.MessageId} for topic {config.Topic}.");
+                    return Task.FromResult(SubscriberClient.Reply.Ack);
+                }
+            });
+        }
+
         private Func<PubsubMessage, CancellationToken, Task<SubscriberClient.Reply>> QueueDonorsForImportHandler() => async (msg, cancellationToken) =>
         {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_semaphoreCts.Token, cancellationToken);
+            try
+            {
+                await m_semaphore.WaitAsync(linkedCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return SubscriberClient.Reply.Nack;
+            }
+
             m_logger.Info("Getting all Donors from Denari...");
             var publishTasks = new List<Task<string>>();
 
@@ -116,28 +131,46 @@ namespace ChildcareWorldwide.Integration.Subscriber
                     var json = JsonConvert.SerializeObject(donor);
 
                     publishTasks.Add(m_googleCloudPubSubService.PublishMessageAsync(Topics.HubspotImportFromDonor, json));
+
+                    // TODO: For testing, remove
+                    if (publishTasks.Count > 1500)
+                        break;
                 }
 
                 if (cancellationToken.IsCancellationRequested)
+                {
+                    m_semaphore.Release();
                     return SubscriberClient.Reply.Nack;
+                }
 
                 await Task.WhenAll(publishTasks);
                 m_logger.Info("Finished getting all Donors from Denari for import.");
+                m_semaphore.Release();
                 return SubscriberClient.Reply.Ack;
             }
             catch (Exception e)
             {
                 m_logger.Error(e);
+                m_semaphore.Release();
                 return SubscriberClient.Reply.Nack;
             }
         };
 
         private Func<PubsubMessage, CancellationToken, Task<SubscriberClient.Reply>> ImportCompanyFromDonorHandler() => async (msg, cancellationToken) =>
         {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_semaphoreCts.Token, cancellationToken);
+            try
+            {
+                await m_semaphore.WaitAsync(linkedCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return SubscriberClient.Reply.Nack;
+            }
+
             var donor = JsonConvert.DeserializeObject<Donor>(msg.Data.ToStringUtf8());
 
-            if ((!donor.Email.IsValidEmailAddress() && !donor.Email2.IsValidEmailAddress())
-                || (donor.Email.IsValidEmailAddress() && !await IsEmailOptedOutAsync(donor.Email))
+            if ((donor.Email.IsValidEmailAddress() && !await IsEmailOptedOutAsync(donor.Email))
                 || (donor.Email2.IsValidEmailAddress() && !await IsEmailOptedOutAsync(donor.Email2)))
             {
                 m_logger.Debug($"Importing company from donor #{donor.Account}");
@@ -148,16 +181,29 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 catch (Exception e)
                 {
                     m_logger.Error(e, $"Error creating or updating company in Hubspot for donor {donor.Account}.");
+                    m_semaphore.Release();
                     return SubscriberClient.Reply.Nack;
                 }
             }
 
+            m_semaphore.Release();
             return SubscriberClient.Reply.Ack;
         };
 
         private Func<PubsubMessage, CancellationToken, Task<SubscriberClient.Reply>> ImportContactFromDonorHandler() => async (msg, cancellationToken) =>
         {
+            using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(m_semaphoreCts.Token, cancellationToken);
+            try
+            {
+                await m_semaphore.WaitAsync(linkedCts.Token);
+            }
+            catch (OperationCanceledException)
+            {
+                return SubscriberClient.Reply.Nack;
+            }
+
             var donor = JsonConvert.DeserializeObject<Donor>(msg.Data.ToStringUtf8());
+
             if (donor.Email.IsValidEmailAddress() && !await IsEmailOptedOutAsync(donor.Email))
             {
                 m_logger.Debug($"Importing contact from donor #{donor.Account} for email {donor.Email}");
@@ -168,6 +214,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 catch (Exception e)
                 {
                     m_logger.Error(e, $"Error creating or updating contact in Hubspot for email {donor.Email}.");
+                    m_semaphore.Release();
                     return SubscriberClient.Reply.Nack;
                 }
             }
@@ -182,10 +229,12 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 catch (Exception e)
                 {
                     m_logger.Error(e, $"Error creating or updating contact in Hubspot for email {donor.Email2}.");
+                    m_semaphore.Release();
                     return SubscriberClient.Reply.Nack;
                 }
             }
 
+            m_semaphore.Release();
             return SubscriberClient.Reply.Ack;
         };
 
