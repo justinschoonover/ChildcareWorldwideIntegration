@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Threading.Tasks;
-using ChildcareWorldwide.Google.Api.Configuration;
 using ChildcareWorldwide.Hubspot.Api;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 
 namespace ChildcareWorldwide.Tools.CloneHubspotProperties
@@ -22,20 +22,23 @@ namespace ChildcareWorldwide.Tools.CloneHubspotProperties
             await CloneHubspotProperties(args[0], args[1]);
         }
 
+        [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
         public static async Task CloneHubspotProperties(string productionApiKey, string sandboxApiKey)
         {
-            using var productionService = new HubspotService(new ConfigurationBuilder()
+            using var productionService = new HubspotService(
+                new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
                     { "HubspotApiKey", productionApiKey },
                 })
-                .Build());
-            using var sandboxService = new HubspotService(new ConfigurationBuilder()
+                .Build(), new MemoryCache(new MemoryCacheOptions()));
+            using var sandboxService = new HubspotService(
+                new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string>
                 {
                     { "HubspotApiKey", sandboxApiKey },
                 })
-                .Build());
+                .Build(), new MemoryCache(new MemoryCacheOptions()));
 
             Console.WriteLine("Cloning Custom Contact Property Groups...");
             await foreach (var propertyGroup in productionService.ListContactPropertyGroupsAsync())

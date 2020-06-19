@@ -40,5 +40,19 @@ namespace ChildcareWorldWide.TestFixtures.Integration
 
             Assert.NotNull(optedOutEmails);
         }
+
+        [Test]
+        [Category("IntegrationTest")]
+        public async Task TestHydrateCompaniesCacheAsync()
+        {
+            await HubspotService.HydrateCompaniesCacheAsync();
+        }
+
+        [Test]
+        [Category("IntegrationTest")]
+        public async Task TestHydrateContactsCacheAsync()
+        {
+            await HubspotService.HydrateContactsCacheAsync();
+        }
     }
 }

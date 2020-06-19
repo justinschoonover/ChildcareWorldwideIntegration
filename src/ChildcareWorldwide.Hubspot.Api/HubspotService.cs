@@ -5,6 +5,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Runtime.Caching;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -15,6 +16,7 @@ using ChildcareWorldwide.Hubspot.Api.Mappers;
 using ChildcareWorldwide.Hubspot.Api.Models;
 using ChildcareWorldwide.Hubspot.Api.Responses;
 using Microsoft.AspNetCore.WebUtilities;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -28,12 +30,14 @@ namespace ChildcareWorldwide.Hubspot.Api
         private readonly SimpleRateLimiter m_rateLimiter = default!;
         private readonly Random m_jitterer = default!;
 
+        private readonly IMemoryCache m_cache;
         private readonly ConcurrentDictionary<string, Contact> m_contactsByEmail = new ConcurrentDictionary<string, Contact>();
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
-        public HubspotService(IConfiguration configuration)
+        public HubspotService(IConfiguration configuration, IMemoryCache memoryCache)
         {
             m_client = new HttpClient(new HubspotHttpClientHandler(configuration["HubspotApiKey"])) { BaseAddress = new Uri("https://api.hubapi.com/") };
+            m_cache = memoryCache;
 
             // Hubspot API has a global limit of 100 requests every 10 seconds
             m_rateLimiter = SimpleRateLimiter.MaxRequestsPerInterval(100, TimeSpan.FromSeconds(10));
@@ -47,15 +51,92 @@ namespace ChildcareWorldwide.Hubspot.Api
         {
             m_rateLimiter.Dispose();
             m_client.Dispose();
+            m_cache.Dispose();
+        }
+
+        public async Task HydrateCompaniesCacheAsync(CancellationToken cancellationToken = default)
+        {
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(120),
+            };
+
+            var parameters = new Dictionary<string, string>
+            {
+                { "limit", "100" },
+                { "properties", string.Join(",", DomainModelMapper.GetPropertyNames(new Company())) },
+            };
+
+            var uri = new Uri(QueryHelpers.AddQueryString($"{m_client.BaseAddress}crm/v3/objects/companies", parameters));
+            while (true)
+            {
+                var response = await RequestWithRetriesAsync(
+                    async cancellationToken => await m_client.GetAsync(uri, cancellationToken),
+                    cancellationToken);
+                await response.EnsureSuccessStatusCodeWithResponseBodyInException();
+
+                var companies = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+
+                foreach (var company in companies.Results)
+                {
+                    if (company.Properties != null && company.Properties.ContainsKey("account_id"))
+                        m_cache.Set(company.Properties.Value<string>("account_id"), DomainModelMapper.MapDomainModel<Company>(company), cacheOptions);
+                }
+
+                if (companies.Paging == null)
+                    break;
+
+                uri = new Uri(companies.Paging.Next.Link);
+            }
+        }
+
+        public async Task HydrateContactsCacheAsync(CancellationToken cancellationToken = default)
+        {
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                SlidingExpiration = TimeSpan.FromMinutes(120),
+            };
+
+            var parameters = new Dictionary<string, string>
+            {
+                { "limit", "100" },
+                { "properties", string.Join(",", DomainModelMapper.GetPropertyNames(new Contact())) },
+            };
+
+            var uri = new Uri(QueryHelpers.AddQueryString($"{m_client.BaseAddress}crm/v3/objects/contacts", parameters));
+            while (true)
+            {
+                var response = await RequestWithRetriesAsync(
+                    async cancellationToken => await m_client.GetAsync(uri, cancellationToken),
+                    cancellationToken);
+                await response.EnsureSuccessStatusCodeWithResponseBodyInException();
+
+                var contacts = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+
+                foreach (var contact in contacts.Results)
+                {
+                    if (contact.Properties != null && contact.Properties.ContainsKey("email"))
+                        m_cache.Set(contact.Properties.Value<string>("email"), DomainModelMapper.MapDomainModel<Contact>(contact), cacheOptions);
+                }
+
+                if (contacts.Paging == null)
+                    break;
+
+                uri = new Uri(contacts.Paging.Next.Link);
+            }
         }
 
         #region CRM Objects API - Companies https://developers.hubspot.com/docs/api/crm/companies
 
         public async Task<Company?> GetCompanyByDenariAccountIdAsync(string accountId, CancellationToken cancellationToken = default)
         {
-            var filter = new CrmSearchOptions
+            return await m_cache.GetOrCreateAsync(accountId, async entry =>
             {
-                FilterGroups =
+                entry.SetSlidingExpiration(TimeSpan.FromMinutes(120));
+
+                var filter = new CrmSearchOptions
+                {
+                    FilterGroups =
                 {
                     new CrmSearchFilterGroups
                     {
@@ -70,34 +151,35 @@ namespace ChildcareWorldwide.Hubspot.Api
                         },
                     },
                 },
-                Properties = DomainModelMapper.GetPropertyNames(new Company()),
-                Limit = 1,
-            };
+                    Properties = DomainModelMapper.GetPropertyNames(new Company()),
+                    Limit = 1,
+                };
 
-            var json = JsonConvert.SerializeObject(filter, Formatting.Indented, new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver
+                var json = JsonConvert.SerializeObject(filter, Formatting.Indented, new JsonSerializerSettings
                 {
-                    NamingStrategy = new CamelCaseNamingStrategy(),
-                },
-                NullValueHandling = NullValueHandling.Ignore,
+                    ContractResolver = new DefaultContractResolver
+                    {
+                        NamingStrategy = new CamelCaseNamingStrategy(),
+                    },
+                    NullValueHandling = NullValueHandling.Ignore,
+                });
+
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await RequestWithRetriesAsync(
+                    async cancellationToken => await m_client.PostAsync("/crm/v3/objects/companies/search", content, cancellationToken),
+                    cancellationToken);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                    return null;
+
+                await response.EnsureSuccessStatusCodeWithResponseBodyInException();
+
+                var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+                if (searchResults == null)
+                    return null;
+
+                return DomainModelMapper.MapDomainModel<Company>(searchResults.Results.FirstOrDefault());
             });
-
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.PostAsync("/crm/v3/objects/companies/search", content, cancellationToken),
-                cancellationToken);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-                return null;
-
-            await response.EnsureSuccessStatusCodeWithResponseBodyInException();
-
-            var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
-            if (searchResults == null)
-                return null;
-
-            return DomainModelMapper.MapDomainModel<Company>(searchResults.Results.FirstOrDefault());
         }
 
         public async Task<Company> CreateOrUpdateCompanyAsync(Company company, CancellationToken cancellationToken = default)
@@ -105,7 +187,7 @@ namespace ChildcareWorldwide.Hubspot.Api
             var existingCompany = await GetCompanyByDenariAccountIdAsync(company.DenariAccountId, cancellationToken);
             return DomainModelMapper.MapDomainModel<Company>(existingCompany != null
                 ? await UpdateCompanyAsync(company, existingCompany, cancellationToken)
-                : await CreateCompanyAsync(company, cancellationToken)) !;
+                : await CreateCompanyAsync(company, cancellationToken))!;
         }
 
         #endregion
@@ -114,9 +196,13 @@ namespace ChildcareWorldwide.Hubspot.Api
 
         public async Task<Contact?> GetContactByEmailAsync(string email, CancellationToken cancellationToken = default)
         {
-            var filter = new CrmSearchOptions
+            return await m_cache.GetOrCreateAsync(email, async entry =>
             {
-                FilterGroups =
+                entry.SetSlidingExpiration(TimeSpan.FromMinutes(120));
+
+                var filter = new CrmSearchOptions
+                {
+                    FilterGroups =
                 {
                     new CrmSearchFilterGroups
                     {
@@ -131,34 +217,35 @@ namespace ChildcareWorldwide.Hubspot.Api
                         },
                     },
                 },
-                Properties = DomainModelMapper.GetPropertyNames(new Contact()),
-                Limit = 1,
-            };
+                    Properties = DomainModelMapper.GetPropertyNames(new Contact()),
+                    Limit = 1,
+                };
 
-            var json = JsonConvert.SerializeObject(filter, Formatting.Indented, new JsonSerializerSettings
-            {
-                ContractResolver = new DefaultContractResolver
+                var json = JsonConvert.SerializeObject(filter, Formatting.Indented, new JsonSerializerSettings
                 {
-                    NamingStrategy = new CamelCaseNamingStrategy(),
-                },
-                NullValueHandling = NullValueHandling.Ignore,
+                    ContractResolver = new DefaultContractResolver
+                    {
+                        NamingStrategy = new CamelCaseNamingStrategy(),
+                    },
+                    NullValueHandling = NullValueHandling.Ignore,
+                });
+
+                using var content = new StringContent(json, Encoding.UTF8, "application/json");
+                var response = await RequestWithRetriesAsync(
+                    async cancellationToken => await m_client.PostAsync("/crm/v3/objects/contacts/search", content, cancellationToken),
+                    cancellationToken);
+
+                if (response.StatusCode == HttpStatusCode.NotFound)
+                    return null;
+
+                await response.EnsureSuccessStatusCodeWithResponseBodyInException();
+
+                var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+                if (searchResults == null)
+                    return null;
+
+                return DomainModelMapper.MapDomainModel<Contact>(searchResults.Results.FirstOrDefault());
             });
-
-            using var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.PostAsync("/crm/v3/objects/contacts/search", content, cancellationToken),
-                cancellationToken);
-
-            if (response.StatusCode == HttpStatusCode.NotFound)
-                return null;
-
-            await response.EnsureSuccessStatusCodeWithResponseBodyInException();
-
-            var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
-            if (searchResults == null)
-                return null;
-
-            return DomainModelMapper.MapDomainModel<Contact>(searchResults.Results.FirstOrDefault());
         }
 
         public async Task<Contact> CreateOrUpdateContactAsync(Contact contact, CancellationToken cancellationToken = default)
@@ -176,7 +263,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
             return DomainModelMapper.MapDomainModel<Contact>(existingContact != null
                 ? await UpdateContactAsync(contact, existingContact, cancellationToken)
-                : await CreateContactAsync(contact, cancellationToken)) !;
+                : await CreateContactAsync(contact, cancellationToken))!;
         }
 
         #endregion
@@ -195,7 +282,7 @@ namespace ChildcareWorldwide.Hubspot.Api
                 var emailTimeline = JsonConvert.DeserializeObject<GetEmailTimelineResponse>(await response.Content.ReadAsStringAsync(), new JsonSerializerSettings
                 {
                     MissingMemberHandling = MissingMemberHandling.Ignore,
-                }) !;
+                })!;
 
                 return new PageOffsetSummary<string>(
                     emailTimeline.Timeline.Where(t => t.Changes.Any(c => c.Change == "UNSUBSCRIBED")).Select(t => t.Recipient).ToList(),

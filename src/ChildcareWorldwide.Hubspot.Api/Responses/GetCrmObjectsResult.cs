@@ -7,6 +7,6 @@ namespace ChildcareWorldwide.Hubspot.Api.Responses
     {
         public int? Total { get; set; }
         public List<CrmObject> Results { get; } = new List<CrmObject>();
-        public PagingInfo? Paging { get; }
+        public PagingInfo? Paging { get; set; }
     }
 }

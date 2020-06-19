@@ -114,11 +114,15 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 return new ProcessMessageResult(SubscriberClient.Reply.Nack);
             }
 
-            m_logger.Info("Getting all Donors from Denari...");
             var publishTasks = new List<Task<string>>();
-
             try
             {
+                m_logger.Info("Hydrating Hubspot Company and Contact caches...");
+                await m_hubspotService.HydrateCompaniesCacheAsync();
+                await m_hubspotService.HydrateContactsCacheAsync();
+                m_logger.Info("Finished hydrating Hubspot object caches");
+
+                m_logger.Info("Getting all Donors from Denari...");
                 await foreach (var donor in m_drapiService.GetDonorsAsync(cancellationToken))
                 {
                     m_logger.Debug($"Publishing import events for donor #{donor.Account}");
@@ -127,7 +131,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
                     publishTasks.Add(m_googleCloudPubSubService.PublishMessageAsync(Topics.HubspotImportFromDonor, json));
 
                     // TODO: For testing, remove
-                    if (publishTasks.Count > 1500)
+                    if (publishTasks.Count > 500)
                         break;
                 }
 
@@ -139,6 +143,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
 
                 await Task.WhenAll(publishTasks);
                 m_logger.Info("Finished getting all Donors from Denari for import.");
+
                 m_semaphore.Release();
                 return new ProcessMessageResult(SubscriberClient.Reply.Ack);
             }

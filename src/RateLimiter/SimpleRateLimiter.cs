@@ -49,7 +49,6 @@ namespace RateLimiter
 
         public void Dispose()
         {
-            m_semaphore.Release();
             m_semaphore.Dispose();
         }
     }
