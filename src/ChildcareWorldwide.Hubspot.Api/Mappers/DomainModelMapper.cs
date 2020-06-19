@@ -64,7 +64,7 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
 
         public static List<string> GetPropertyNames<T>(T domainModel)
         {
-            return GetDomainModelProperties(domainModel).Select(p => p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name).ToList();
+            return GetDomainModelProperties(domainModel).Select(p => p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name.ToLower()).ToList();
         }
 
         private static bool IsValueNullOrEmpty<T>([NotNullWhen(false)] this PropertyInfo property, T instance)

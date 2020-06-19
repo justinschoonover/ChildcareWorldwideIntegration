@@ -76,7 +76,7 @@ namespace ChildcareWorldwide.Hubspot.Api.DomainModels
         [JsonProperty("miscellaneous_classifications")]
         public string? MiscellaneousClassifications { get; set; }
 
-        [JsonProperty("miscellaneous_classifications")]
+        [JsonProperty("relationship_classifications")]
         public string? RelationshipClassifications { get; set; }
 
         [JsonProperty("deliverable_denari")]
