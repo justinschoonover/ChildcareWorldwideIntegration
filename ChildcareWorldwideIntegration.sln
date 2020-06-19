@@ -27,13 +27,21 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChildcareWorldwide.Tools.Cl
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{C46E680E-855B-4C1A-99B5-1D3D9F127B77}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChildcareWorldWide.UnitTests", "test\ChildcareWorldWide.UnitTests\ChildcareWorldWide.UnitTests.csproj", "{52C1E284-576B-4612-830E-BFDF898C0A42}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChildcareWorldWide.IntegrationTests", "test\ChildcareWorldWide.IntegrationTests\ChildcareWorldWide.IntegrationTests.csproj", "{5A68C712-06F8-48A0-8E4F-B41A5A66B9B8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChildcareWorldWide.TestFixtures", "test\ChildcareWorldWide.IntegrationTests\ChildcareWorldWide.TestFixtures.csproj", "{5A68C712-06F8-48A0-8E4F-B41A5A66B9B8}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RateLimiter", "src\RateLimiter\RateLimiter.csproj", "{A2E077EE-0985-4A6F-BB0B-27FFD485C46F}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ChildcareWorldwide.Integration.Subscriber", "src\ChildcareWorldwide.Integration.Subscriber\ChildcareWorldwide.Integration.Subscriber.csproj", "{92BB338C-0B1F-4105-AAAB-1ED6940439FF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".github", ".github", "{61E46D85-EDE8-49BB-AC2C-5496DF9D4CFC}"
+	ProjectSection(SolutionItems) = preProject
+		.github\dependabot.yml = .github\dependabot.yml
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "workflows", "workflows", "{35A3F7D6-58AA-4202-9063-7EF1E0C173EC}"
+	ProjectSection(SolutionItems) = preProject
+		.github\workflows\dotnet-core.yml = .github\workflows\dotnet-core.yml
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -105,18 +113,6 @@ Global
 		{32BA34D9-6D96-45A1-8E9D-950A09248544}.Release|x64.Build.0 = Release|Any CPU
 		{32BA34D9-6D96-45A1-8E9D-950A09248544}.Release|x86.ActiveCfg = Release|Any CPU
 		{32BA34D9-6D96-45A1-8E9D-950A09248544}.Release|x86.Build.0 = Release|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Debug|x64.Build.0 = Debug|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Debug|x86.Build.0 = Debug|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Release|Any CPU.Build.0 = Release|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Release|x64.ActiveCfg = Release|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Release|x64.Build.0 = Release|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Release|x86.ActiveCfg = Release|Any CPU
-		{52C1E284-576B-4612-830E-BFDF898C0A42}.Release|x86.Build.0 = Release|Any CPU
 		{5A68C712-06F8-48A0-8E4F-B41A5A66B9B8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{5A68C712-06F8-48A0-8E4F-B41A5A66B9B8}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5A68C712-06F8-48A0-8E4F-B41A5A66B9B8}.Debug|x64.ActiveCfg = Debug|Any CPU
@@ -158,8 +154,9 @@ Global
 		HideSolutionNode = FALSE
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{52C1E284-576B-4612-830E-BFDF898C0A42} = {C46E680E-855B-4C1A-99B5-1D3D9F127B77}
 		{5A68C712-06F8-48A0-8E4F-B41A5A66B9B8} = {C46E680E-855B-4C1A-99B5-1D3D9F127B77}
+		{61E46D85-EDE8-49BB-AC2C-5496DF9D4CFC} = {29CCA89D-7DB5-48E6-B7F1-2487B6186D12}
+		{35A3F7D6-58AA-4202-9063-7EF1E0C173EC} = {61E46D85-EDE8-49BB-AC2C-5496DF9D4CFC}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BBE3F650-9797-437A-B8C4-02314D932B74}

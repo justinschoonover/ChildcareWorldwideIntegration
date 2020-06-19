@@ -3,7 +3,7 @@ using ChildcareWorldwide.Google.Api.Configuration;
 using ChildcareWorldwide.Hubspot.Api;
 using Microsoft.Extensions.Configuration;
 
-namespace ChildcareWorldWide.IntegrationTests
+namespace ChildcareWorldWide.TestFixtures.Integration
 {
     public abstract class TestFixtureBase
     {

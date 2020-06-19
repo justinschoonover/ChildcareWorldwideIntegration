@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using RateLimiter;
 
-namespace ChildCareWorldWide.UnitTests
+namespace ChildcareWorldWide.TestFixtures.Unit
 {
     [TestFixture]
     [Parallelizable(ParallelScope.All)]

@@ -1,7 +1,7 @@
 ﻿using System.Threading.Tasks;
 using NUnit.Framework;
 
-namespace ChildcareWorldWide.IntegrationTests
+namespace ChildcareWorldWide.TestFixtures.Integration
 {
     [TestFixture]
     [Parallelizable(ParallelScope.All)]
@@ -11,6 +11,7 @@ namespace ChildcareWorldWide.IntegrationTests
         public void OneTimeSetup() => OneTimeSetupBase();
 
         [Test]
+        [Category("IntegrationTest")]
         public async Task TestGetCompanyByDenariAccountIdAsync()
         {
             const string testDenariAccountId = "112196";
@@ -21,6 +22,7 @@ namespace ChildcareWorldWide.IntegrationTests
         }
 
         [Test]
+        [Category("IntegrationTest")]
         public async Task TestGetContactByEmailAsync()
         {
             const string testEmail = "coolrobot@hubspot.com";
@@ -31,6 +33,7 @@ namespace ChildcareWorldWide.IntegrationTests
         }
 
         [Test]
+        [Category("IntegrationTest")]
         public async Task TestGetOptedOutEmailsAsync()
         {
             var optedOutEmails = await HubspotService.GetOptedOutEmailsAsync();

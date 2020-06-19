@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using NUnit.Framework;
 using NUnit.Framework.Internal;
 
-namespace ChildcareWorldWide.IntegrationTests
+namespace ChildcareWorldWide.TestFixtures.Integration
 {
     [TestFixture]
     [Parallelizable(ParallelScope.All)]
@@ -14,6 +14,7 @@ namespace ChildcareWorldWide.IntegrationTests
         public void OneTimeSetup() => OneTimeSetupBase();
 
         [Test]
+        [Category("IntegrationTest")]
         public async Task TestGetDonorByAccountAsync()
         {
             const string testDenariAccountId = "112196";
@@ -25,6 +26,7 @@ namespace ChildcareWorldWide.IntegrationTests
         }
 
         [Test]
+        [Category("IntegrationTest")]
         public async Task TestGetClassificationsForDonorAsync()
         {
             const string testDenariDonorKey = "C4113F1159";
@@ -34,6 +36,7 @@ namespace ChildcareWorldWide.IntegrationTests
         }
 
         [Test]
+        [Category("IntegrationTest")]
         [Explicit("Takes 30+ seconds to run.")]
         public async Task TestGetDonorsAsync()
         {

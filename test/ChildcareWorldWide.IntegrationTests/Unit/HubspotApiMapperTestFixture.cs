@@ -4,7 +4,7 @@ using ChildcareWorldwide.Hubspot.Api.DomainModels;
 using ChildcareWorldwide.Hubspot.Api.Mappers;
 using NUnit.Framework;
 
-namespace ChildcareWorldWide.UnitTests
+namespace ChildcareWorldWide.TestFixtures.Unit
 {
     [TestFixture]
     [Parallelizable(ParallelScope.All)]
