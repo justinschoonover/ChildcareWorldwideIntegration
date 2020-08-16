@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 using System.Net.Mail;
 
-namespace ChildcareWorldwide.Integration.Subscriber.Helpers
+namespace ChildcareWorldwide.Hubspot.Api.Helpers
 {
     internal static class StringExtensions
     {

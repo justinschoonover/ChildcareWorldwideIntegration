@@ -2,7 +2,7 @@
 
 namespace ChildcareWorldwide.Hubspot.Api.Helpers
 {
-    public sealed class PageOffsetSummary<T>
+    internal sealed class PageOffsetSummary<T>
         where T : class
     {
         public PageOffsetSummary(ICollection<T> results, string offset, bool hasMore)

@@ -1,10 +1,9 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace ChildcareWorldwide.Hubspot.Api.Helpers
 {
-    public static class HttpRequestUtility
+    internal static class HttpRequestUtility
     {
         public static async Task EnsureSuccessStatusCodeWithResponseBodyInException(this HttpResponseMessage? response)
         {

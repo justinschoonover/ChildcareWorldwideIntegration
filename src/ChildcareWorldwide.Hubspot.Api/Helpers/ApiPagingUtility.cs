@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 
 namespace ChildcareWorldwide.Hubspot.Api.Helpers
 {
-    public static class ApiPagingUtility
+    internal static class ApiPagingUtility
     {
         public static async Task<IReadOnlyList<T>> IterateAsync<T>(Func<string, Task<PageOffsetSummary<T>>> call)
             where T : class
