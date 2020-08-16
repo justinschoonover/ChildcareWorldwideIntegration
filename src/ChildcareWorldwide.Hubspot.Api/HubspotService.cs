@@ -5,7 +5,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Runtime.Caching;
 using System.Runtime.CompilerServices;
 using System.Text;
 using System.Threading;
@@ -79,7 +78,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
                 foreach (var company in companies.Results)
                 {
-                    if (company.Properties != null && company.Properties.ContainsKey("account_id"))
+                    if (company.Properties != null && company.Properties.ContainsKey("account_id") && !company.Properties.Value<string>("account_id").IsNullOrEmpty())
                         m_cache.Set(company.Properties.Value<string>("account_id"), DomainModelMapper.MapDomainModel<Company>(company), cacheOptions);
                 }
 
@@ -115,7 +114,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
                 foreach (var contact in contacts.Results)
                 {
-                    if (contact.Properties != null && contact.Properties.ContainsKey("email"))
+                    if (contact.Properties != null && contact.Properties.ContainsKey("email") && !contact.Properties.Value<string>("email").IsNullOrEmpty())
                         m_cache.Set(contact.Properties.Value<string>("email"), DomainModelMapper.MapDomainModel<Contact>(contact), cacheOptions);
                 }
 
@@ -187,7 +186,7 @@ namespace ChildcareWorldwide.Hubspot.Api
             var existingCompany = await GetCompanyByDenariAccountIdAsync(company.DenariAccountId, cancellationToken);
             return DomainModelMapper.MapDomainModel<Company>(existingCompany != null
                 ? await UpdateCompanyAsync(company, existingCompany, cancellationToken)
-                : await CreateCompanyAsync(company, cancellationToken))!;
+                : await CreateCompanyAsync(company, cancellationToken)) !;
         }
 
         #endregion
@@ -263,7 +262,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
             return DomainModelMapper.MapDomainModel<Contact>(existingContact != null
                 ? await UpdateContactAsync(contact, existingContact, cancellationToken)
-                : await CreateContactAsync(contact, cancellationToken))!;
+                : await CreateContactAsync(contact, cancellationToken)) !;
         }
 
         #endregion
@@ -282,7 +281,7 @@ namespace ChildcareWorldwide.Hubspot.Api
                 var emailTimeline = JsonConvert.DeserializeObject<GetEmailTimelineResponse>(await response.Content.ReadAsStringAsync(), new JsonSerializerSettings
                 {
                     MissingMemberHandling = MissingMemberHandling.Ignore,
-                })!;
+                }) !;
 
                 return new PageOffsetSummary<string>(
                     emailTimeline.Timeline.Where(t => t.Changes.Any(c => c.Change == "UNSUBSCRIBED")).Select(t => t.Recipient).ToList(),

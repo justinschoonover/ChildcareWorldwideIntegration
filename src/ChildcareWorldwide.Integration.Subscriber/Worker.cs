@@ -9,6 +9,7 @@ using ChildcareWorldwide.Google.Api;
 using ChildcareWorldwide.Google.Api.Models;
 using ChildcareWorldwide.Google.Api.PubSub;
 using ChildcareWorldwide.Hubspot.Api;
+using ChildcareWorldwide.Hubspot.Api.Helpers;
 using ChildcareWorldwide.Integration.Subscriber.Helpers;
 using ChildcareWorldwide.Integration.Subscriber.Mappers;
 using ChildcareWorldwide.Integration.Subscriber.Models;
@@ -55,10 +56,6 @@ namespace ChildcareWorldwide.Integration.Subscriber
         {
             // ensure topics and subscriptions exist
             await m_googleCloudPubSubService.InitalizeAsync(cancellationToken);
-
-            // cache email blacklist
-            m_logger.Info("Caching email blacklist for 120 minutes");
-            m_cache.Set(OptOutCacheKey, await m_hubspotService.GetOptedOutEmailsAsync(), TimeSpan.FromMinutes(120));
 
             // start subscribers
             await StartSubscriberWithErrorHandlingAsync(Subscriptions.HubspotGetDonorsForImport, QueueDonorsForImportHandler());
