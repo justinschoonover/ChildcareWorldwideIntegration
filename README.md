@@ -10,7 +10,7 @@ gcloud builds submit
 ## Cloud Pub/Sub One Time Setup
 ```
 # Enable Pub/Sub to create authentication tokens in your project
-gcloud projects add-iam-policy-binding original-wonder-PROJECT_ID `
+gcloud projects add-iam-policy-binding PROJECT_ID `
      --member=serviceAccount:service-PROJECT-NUMBER@gcp-sa-pubsub.iam.gserviceaccount.com `
      --role=roles/iam.serviceAccountTokenCreator
 
