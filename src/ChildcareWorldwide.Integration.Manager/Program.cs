@@ -14,10 +14,13 @@ namespace ChildcareWorldwide.Integration.Manager
         {
             try
             {
+                Logger logger = LogManager.GetCurrentClassLogger();
+                logger.Info("Starting ChildcareWorldwide.Integration.Manager");
                 CreateHostBuilder(args).Build().Run();
             }
             finally
             {
+                LogManager.Flush(TimeSpan.FromSeconds(15));
                 LogManager.Shutdown();
             }
         }

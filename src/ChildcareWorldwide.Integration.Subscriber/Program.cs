@@ -7,6 +7,7 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Web;
+using System;
 
 namespace ChildcareWorldwide.Integration.Subscriber
 {
@@ -16,10 +17,13 @@ namespace ChildcareWorldwide.Integration.Subscriber
         {
             try
             {
+                Logger logger = LogManager.GetCurrentClassLogger();
+                logger.Info("Starting ChildcareWorldwide.Integration.Subscriber");
                 CreateHostBuilder(args).Build().Run();
             }
             finally
             {
+                LogManager.Flush(TimeSpan.FromSeconds(15));
                 LogManager.Shutdown();
             }
         }
