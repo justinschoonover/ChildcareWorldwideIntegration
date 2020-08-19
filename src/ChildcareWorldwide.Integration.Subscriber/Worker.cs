@@ -249,6 +249,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
 
             IReadOnlyList<string> optedOutList = await m_cache.GetOrCreateAsync(OptOutCacheKey, async entry =>
             {
+                // TODO - add semaphoreslim for lambda function
                 m_logger.Info("Caching email blacklist for 120 minutes");
                 entry.SetSlidingExpiration(TimeSpan.FromMinutes(120));
                 return await m_hubspotService.GetOptedOutEmailsAsync();
