@@ -1,3 +1,4 @@
+using System;
 using ChildcareWorldwide.Denari.Api;
 using ChildcareWorldwide.Google.Api;
 using ChildcareWorldwide.Google.Api.Configuration;
@@ -7,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using NLog;
 using NLog.Web;
-using System;
 
 namespace ChildcareWorldwide.Integration.Subscriber
 {

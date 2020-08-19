@@ -20,6 +20,7 @@ namespace ChildcareWorldwide.Integration.Manager
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+            NLog.LogManager.Configuration = new NLog.Config.XmlLoggingConfiguration("manager.nlog.config");
         }
 
         public IConfiguration Configuration { get; }
