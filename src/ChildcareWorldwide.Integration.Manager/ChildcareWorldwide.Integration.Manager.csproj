@@ -19,7 +19,7 @@
     <PackageReference Include="NLog" Version="4.7.3" />
   </ItemGroup>
   <ItemGroup>
-    <Content Update="manager.nlog.config">
+    <Content Update="nlog.config">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

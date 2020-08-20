@@ -37,7 +37,7 @@ namespace ChildcareWorldwide.Integration.Manager
                 })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
-                    webBuilder.UseStartup<Startup>().UseUrls(uri);
+                    webBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, "ChildcareWorldwide.Google.Api").UseStartup<Startup>().UseUrls(uri);
                 })
                 .ConfigureLogging(logging =>
                 {

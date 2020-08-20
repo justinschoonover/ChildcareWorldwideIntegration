@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
-using System.Runtime.InteropServices.ComTypes;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Google.Api.Helpers;
 using Google.Cloud.SecretManager.V1;
 using Grpc.Core;
+using NLog;
 
 namespace ChildcareWorldwide.Google.Api
 {
@@ -11,9 +11,11 @@ namespace ChildcareWorldwide.Google.Api
     {
         private readonly SecretManagerServiceClient m_client;
         private readonly string m_projectId;
+        private readonly Logger m_logger;
 
         public GoogleSecretManagerService()
         {
+            m_logger = LogManager.GetCurrentClassLogger();
             m_client = SecretManagerServiceClient.Create();
             m_projectId = GoogleComputeEngineHelper.GetCurrentProjectId();
         }
@@ -61,6 +63,7 @@ namespace ChildcareWorldwide.Google.Api
             };
 
             var response = await m_client.AccessSecretVersionAsync(request);
+            m_logger.Debug("Fetched version {secretVersion} of secret {secretId}");
             return response.Payload.Data.ToStringUtf8();
         }
     }

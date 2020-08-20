@@ -16,6 +16,13 @@ steps:
 # Deploy container images to Cloud Run
 - name: 'gcr.io/cloud-builders/gcloud'
   args: ['run', 'deploy', 'ccw-integration-manager', '--image', 'gcr.io/$PROJECT_ID/ccwintegrationmanager', '--region', 'us-west1', '--platform', 'managed', '--allow-unauthenticated']
+# Only one of these will succeed
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: '/bin/bash'
+  args: ['-c', 'gcloud compute instances create-with-container ccw-integration-subscriber --machine-type=f1-micro --zone=us-west1-a --container-image=gcr.io/$PROJECT_ID/ccwintegrationsubscriber || exit 0']
+- name: 'gcr.io/cloud-builders/gcloud'
+  entrypoint: '/bin/bash'
+  args: ['-c', 'gcloud compute instances update-container ccw-integration-subscriber --machine-type=f1-micro --zone=us-west1-a --container-image=gcr.io/$PROJECT_ID/ccwintegrationsubscriber || exit 0']
 
 
 images:
