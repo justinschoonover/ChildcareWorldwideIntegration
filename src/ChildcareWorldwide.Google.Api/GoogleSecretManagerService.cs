@@ -57,6 +57,7 @@ namespace ChildcareWorldwide.Google.Api
 
         private async Task<string> AccessSecretVersion(string secretId, string secretVersion)
         {
+            m_logger.Debug("Attempting to fetch version {secretVersion} of secret {secretId}");
             var request = new AccessSecretVersionRequest
             {
                 SecretVersionName = new SecretVersionName(m_projectId, secretId, secretVersion),
