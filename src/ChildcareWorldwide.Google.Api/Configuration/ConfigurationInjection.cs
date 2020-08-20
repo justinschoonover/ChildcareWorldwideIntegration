@@ -12,7 +12,7 @@ namespace ChildcareWorldwide.Google.Api.Configuration
             logger.Debug("Injecting Google Secrets into configuration providers.");
             builder.ConfigureAppConfiguration((context, config) =>
             {
-                config.AddGoogleSecretsConfiguration();
+                config.Add(new GoogleSecretsConfigurationSource());
             });
         }
     }

@@ -31,10 +31,6 @@ namespace ChildcareWorldwide.Integration.Manager
             string uri = $"http://0.0.0.0:{port}";
 
             return Host.CreateDefaultBuilder(args)
-                .ConfigureAppConfiguration((hostingContext, config) =>
-                {
-                    config.AddGoogleSecretsConfiguration();
-                })
                 .ConfigureWebHostDefaults(webBuilder =>
                 {
                     webBuilder.UseSetting(WebHostDefaults.HostingStartupAssembliesKey, "ChildcareWorldwide.Google.Api").UseStartup<Startup>().UseUrls(uri);
