@@ -19,7 +19,7 @@ steps:
 # Only one of these will succeed
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: '/bin/bash'
-  args: ['-c', 'gcloud compute instances create-with-container ccw-integration-subscriber --machine-type=f1-micro --zone=us-west1-a --container-image=gcr.io/$PROJECT_ID/ccwintegrationsubscriber || exit 0']
+  args: ['-c', 'gcloud compute instances create-with-container ccw-integration-subscriber --machine-type=f1-micro --zone=us-west1-a --container-image=gcr.io/$PROJECT_ID/ccwintegrationsubscriber --scopes=default,cloud-platform || exit 0']
 - name: 'gcr.io/cloud-builders/gcloud'
   entrypoint: '/bin/bash'
   args: ['-c', 'gcloud compute instances update-container ccw-integration-subscriber --zone=us-west1-a --container-image=gcr.io/$PROJECT_ID/ccwintegrationsubscriber || exit 0']
