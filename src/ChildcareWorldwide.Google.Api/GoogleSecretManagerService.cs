@@ -46,9 +46,10 @@ namespace ChildcareWorldwide.Google.Api
                 {
                     return await AccessSecretVersion(secretId, versionId);
                 }
-                catch (RpcException)
+                catch (RpcException e)
                 {
                     // try an older version of the secret if it exists
+                    m_logger.Warn(e);
                 }
             }
 
@@ -57,14 +58,14 @@ namespace ChildcareWorldwide.Google.Api
 
         private async Task<string> AccessSecretVersion(string secretId, string secretVersion)
         {
-            m_logger.Debug("Attempting to fetch version {secretVersion} of secret {secretId}");
+            m_logger.Trace($"Attempting to fetch version {secretVersion} of secret {secretId}");
             var request = new AccessSecretVersionRequest
             {
                 SecretVersionName = new SecretVersionName(m_projectId, secretId, secretVersion),
             };
 
             var response = await m_client.AccessSecretVersionAsync(request);
-            m_logger.Debug("Fetched version {secretVersion} of secret {secretId}");
+            m_logger.Trace($"Fetched version {secretVersion} of secret {secretId}");
             return response.Payload.Data.ToStringUtf8();
         }
     }

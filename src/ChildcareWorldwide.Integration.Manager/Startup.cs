@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using NLog;
 
 namespace ChildcareWorldwide.Integration.Manager
 {
@@ -27,9 +26,6 @@ namespace ChildcareWorldwide.Integration.Manager
 
         public void ConfigureServices(IServiceCollection services)
         {
-            var logger = LogManager.GetCurrentClassLogger();
-            logger.Debug(Configuration["Authentication_Google_ClientId"]);
-
             services.AddControllersWithViews();
             services.AddHealthChecks();
 
