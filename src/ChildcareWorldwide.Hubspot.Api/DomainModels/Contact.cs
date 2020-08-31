@@ -28,7 +28,7 @@ namespace ChildcareWorldwide.Hubspot.Api.DomainModels
         [JsonProperty("esalutation")]
         public string? ESalutation { get; set; }
 
-        [JsonProperty("industry")]
+        [JsonProperty("record_type")]
         public string? DonorType { get; set; }
 
         public string? Organization { get; set; }
@@ -134,7 +134,7 @@ namespace ChildcareWorldwide.Hubspot.Api.DomainModels
         public string? Gender { get; set; }
 
         [JsonProperty("date_of_birth")]
-        public DateTime? DateOfBirth { get; set; }
+        public string? DateOfBirth { get; set; }
 
         [JsonProperty("date_of_birth_spouse_secondary_")]
         public DateTime? DateOfBirthSpouse { get; set; }

@@ -101,6 +101,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
 
         private Func<PubsubMessage, CancellationToken, Task<ProcessMessageResult>> QueueDonorsForImportHandler() => async (msg, cancellationToken) =>
         {
+            // limit concurrency without holding messages for unreasonably long times
             using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(m_semaphoreWaitTimespan).Token, cancellationToken);
             try
             {
@@ -111,25 +112,29 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 return new ProcessMessageResult(SubscriberClient.Reply.Nack);
             }
 
+            // make sure email blacklist cache is hydrated
+            await IsEmailOptedOutAsync(string.Empty);
+
             var publishTasks = new List<Task<string>>();
             try
             {
-                m_logger.Info("Hydrating Hubspot Company and Contact caches...");
-                await m_hubspotService.HydrateCompaniesCacheAsync();
-                await m_hubspotService.HydrateContactsCacheAsync();
-                m_logger.Info("Finished hydrating Hubspot object caches");
-
-                m_logger.Info("Getting all Donors from Denari...");
-                await foreach (var donor in m_drapiService.GetDonorsAsync(cancellationToken))
+                if (msg.Data.ToStringUtf8().Equals("all", StringComparison.InvariantCultureIgnoreCase))
                 {
-                    m_logger.Debug($"Publishing import events for donor #{donor.Account}");
-                    var json = JsonConvert.SerializeObject(donor);
+                    m_logger.Info("Getting all Donors from Denari...");
+                    await foreach (var donor in m_drapiService.GetDonorsAsync(cancellationToken))
+                    {
+                        QueueImportTask(donor, publishTasks);
 
-                    publishTasks.Add(m_googleCloudPubSubService.PublishMessageAsync(Topics.HubspotImportFromDonor, json));
-
-                    // TODO: For testing, remove
-                    if (publishTasks.Count > 500)
-                        break;
+                        // TODO: For testing, remove
+                        if (publishTasks.Count > 500)
+                            break;
+                    }
+                }
+                else
+                {
+                    var (donor, _) = await m_drapiService.GetDonorByAccountAsync(msg.Data.ToStringUtf8(), cancellationToken);
+                    if (donor != null)
+                        QueueImportTask(donor, publishTasks);
                 }
 
                 if (cancellationToken.IsCancellationRequested)
@@ -153,6 +158,14 @@ namespace ChildcareWorldwide.Integration.Subscriber
                     Response = SubscriberClient.Reply.Ack,
                     Exception = e,
                 };
+            }
+
+            void QueueImportTask(Donor donor, List<Task<string>> tasks)
+            {
+                m_logger.Debug($"Publishing import event for donor #{donor.Account}");
+                var json = JsonConvert.SerializeObject(donor);
+
+                tasks.Add(m_googleCloudPubSubService.PublishMessageAsync(Topics.HubspotImportFromDonor, json));
             }
         };
 
@@ -226,7 +239,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 try
                 {
                     m_logger.Debug($"Importing contact from donor #{donor.Account} for email {email}");
-                    await m_hubspotService.CreateOrUpdateContactAsync(IntegrationMapper.MapDonorToContact(donor, email));
+                    await m_hubspotService.CreateOrUpdateContactAsync(IntegrationMapper.MapDonorToContact(donor, email), cancellationToken);
                 }
                 catch (Exception e)
                 {
@@ -249,7 +262,6 @@ namespace ChildcareWorldwide.Integration.Subscriber
 
             IReadOnlyList<string> optedOutList = await m_cache.GetOrCreateAsync(OptOutCacheKey, async entry =>
             {
-                // TODO - add semaphoreslim for lambda function
                 m_logger.Info("Caching email blacklist for 120 minutes");
                 entry.SetSlidingExpiration(TimeSpan.FromMinutes(120));
                 return await m_hubspotService.GetOptedOutEmailsAsync();

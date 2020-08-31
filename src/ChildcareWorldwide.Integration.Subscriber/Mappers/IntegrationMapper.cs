@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using ChildcareWorldwide.Denari.Api.Models;
 using ChildcareWorldwide.Hubspot.Api.DomainModels;
+using ChildcareWorldwide.Integration.Subscriber.Helpers;
 
 namespace ChildcareWorldwide.Integration.Subscriber.Mappers
 {
@@ -62,7 +64,7 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
                 FirstName = donor.FirstName,
                 LastName = donor.LastName,
                 SecondaryContact = donor.Spouse,
-                ContactName = donor.ContactName,
+                ContactName = donor.ContactName?.NullIfEmpty() ?? donor.Organization,
                 DenariSalutation = donor.Salutation,
                 DonorType = donor.Type,
                 StreetAddress = donor.Street,
@@ -92,7 +94,7 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
                 Gifts4YearsAgo = donor.Gifts4YearsAgo,
                 International = IsForeignCountry(donor.Country),
                 Gender = donor.Gender,
-                DateOfBirth = donor.Dob.SpecifyUtc(),
+                DateOfBirth = donor.Dob.SpecifyUtc()?.ToString("d", DateTimeFormatInfo.InvariantInfo),
                 DateOfBirthSpouse = donor.DobSpouse.SpecifyUtc(),
                 // Jurisdiction = donor.Jurisdiction,
                 Notes = string.Join("\n", donor.Notes),
@@ -101,7 +103,7 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
 
         private static bool IsForeignCountry(string? country)
         {
-            if (country == null)
+            if (country.IsNullOrEmpty())
                 return false;
 
             var knownUnitedStatesDenariVariants = new List<string>

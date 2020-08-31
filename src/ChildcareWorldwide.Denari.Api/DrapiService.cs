@@ -69,11 +69,11 @@ namespace ChildcareWorldwide.Denari.Api
             });
             m_logger.Debug("Requesting from Denari API...");
             var response = await m_client.PostAsync("Donor/firstpage", filterJson);
-            m_logger.Debug(response);
+            m_logger.Trace(response);
             response.EnsureSuccessStatusCode();
 
             var responseJson = await response.Content.ReadAsStringAsync();
-            m_logger.Debug(responseJson);
+            m_logger.Trace(responseJson);
             var donors = JsonConvert.DeserializeObject<DonorList<Donor>>(responseJson);
             return (donors?.Data.FirstOrDefault(), responseJson);
         }
@@ -99,7 +99,7 @@ namespace ChildcareWorldwide.Denari.Api
                 });
 
                 string endpoint = currentPage == 0 ? "Donor/firstpage" : "Donor/nextpage";
-                var response = await m_client.PostAsync(endpoint, json);
+                var response = await m_client.PostAsync(endpoint, json, cancellationToken);
                 response.EnsureSuccessStatusCode();
 
                 var donorList = JsonConvert.DeserializeObject<DonorList<Donor>>(await response.Content.ReadAsStringAsync());
@@ -122,7 +122,7 @@ namespace ChildcareWorldwide.Denari.Api
                 if (cancellationToken.IsCancellationRequested)
                     break;
 
-                var response = await m_client.GetAsync($"Donor/{donorKey}/classification");
+                var response = await m_client.GetAsync($"Donor/{donorKey}/classification", cancellationToken);
                 response.EnsureSuccessStatusCode();
 
                 var donorList = JsonConvert.DeserializeObject<DonorList<DonorClassification>>(await response.Content.ReadAsStringAsync());
@@ -162,7 +162,7 @@ namespace ChildcareWorldwide.Denari.Api
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                await m_rateLimiter.WaitForReady();
+                await m_rateLimiter.WaitForReady(cancellationToken);
                 return await base.SendAsync(request, cancellationToken);
             }
         }

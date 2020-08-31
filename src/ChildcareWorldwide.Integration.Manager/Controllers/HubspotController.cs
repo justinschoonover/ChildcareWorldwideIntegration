@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using ChildcareWorldwide.Google.Api;
 using ChildcareWorldwide.Google.Api.PubSub;
 using ChildcareWorldwide.Integration.Manager.Models;
@@ -17,7 +16,7 @@ namespace ChildcareWorldwide.Integration.Manager.Controllers
         {
             var viewModel = new HubspotImportFromDenari
             {
-                ImportMessageId = await pubSubService.PublishMessageAsync(Topics.HubspotBeginImport, Guid.NewGuid().ToString()),
+                ImportMessageId = await pubSubService.PublishMessageAsync(Topics.HubspotBeginImport, "all"),
             };
 
             return View(GetPageViewModel(viewModel, pageTitle: "Hubspot Import From Denari", HttpContext.User));

@@ -58,7 +58,7 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
                     properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLower(CultureInfo.InvariantCulture), property.GetValue(updated)));
             }
 
-            result = new JObject(new JProperty("properties", properties)).ToString();
+            result = JsonConvert.SerializeObject(new JObject(new JProperty("properties", properties)), Formatting.Indented, new DateTimeJsonConverter(), new DecimalJsonConverter());
             return properties.Count > 0;
         }
 
@@ -86,13 +86,17 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
                 var propertyInfo = domainModel?.GetType().GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
                 if (propertyInfo == null)
                 {
-                    propertyInfo = domainModel?
+                    var matchingProperties = domainModel?
                         .GetType()
                         .GetProperties(BindingFlags.Public | BindingFlags.Instance)
                         .Select(p => (Property: p, JsonProperty: p.GetCustomAttribute<JsonPropertyAttribute>()))
                         .Where(t => t.JsonProperty != null && t.JsonProperty.PropertyName == name)
-                        .Select(t => t.Property)
-                        .SingleOrDefault();
+                        .Select(t => t.Property);
+
+                    if (matchingProperties.Count() > 1)
+                        throw new InvalidOperationException($"Multiple {typeof(T)} properties map to the same Hubspot field.");
+
+                    propertyInfo = matchingProperties.SingleOrDefault();
                 }
 
                 // property isn't present in our model
@@ -115,7 +119,10 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
             if (domainModel == null)
                 throw new ArgumentNullException(nameof(domainModel));
 
-            return domainModel.GetType().GetProperties(BindingFlags.Public | BindingFlags.Instance).Select(p => (Property: p, JsonProperty: p.GetCustomAttribute<JsonPropertyAttribute>()));
+            return domainModel
+                .GetType()
+                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
+                .Select(p => (Property: p, JsonProperty: p.GetCustomAttribute<JsonPropertyAttribute>()));
         }
 
         private class DateTimeJsonConverter : JsonConverter<DateTime>

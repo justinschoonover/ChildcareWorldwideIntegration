@@ -12,6 +12,6 @@ namespace ChildcareWorldwide.Denari.Api.CustomConverters
         public override IEnumerable<string> ReadJson(JsonReader reader, Type objectType, [AllowNull] IEnumerable<string> existingValue, bool hasExistingValue, JsonSerializer serializer) =>
             new List<string>(((string?)reader.Value)?.Split(CrLf));
         public override void WriteJson(JsonWriter writer, [AllowNull] IEnumerable<string> value, JsonSerializer serializer) =>
-            writer.WriteValue(string.Concat(CrLf, value));
+            writer.WriteValue(string.Join(CrLf, value));
     }
 }
