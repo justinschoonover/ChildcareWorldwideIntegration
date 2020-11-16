@@ -61,9 +61,9 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
             {
                 DenariAccountId = donor.Account,
                 Email = email,
-                FirstName = donor.FirstName,
+                FirstName = email.Equals(donor.Email, StringComparison.InvariantCultureIgnoreCase) ? donor.FirstName : donor.Spouse,
                 LastName = donor.LastName,
-                SecondaryContact = donor.Spouse,
+                SecondaryContact = email.Equals(donor.Email, StringComparison.InvariantCultureIgnoreCase) ? donor.Spouse : donor.FirstName,
                 ContactName = donor.ContactName?.NullIfEmpty() ?? donor.Organization,
                 DenariSalutation = donor.Salutation,
                 DonorType = donor.Type,
