@@ -96,7 +96,6 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
                 Gender = donor.Gender,
                 DateOfBirth = donor.Dob.SpecifyUtc()?.ToString("d", DateTimeFormatInfo.InvariantInfo),
                 DateOfBirthSpouse = donor.DobSpouse.SpecifyUtc(),
-                // Jurisdiction = donor.Jurisdiction,
                 Notes = string.Join("\n", donor.Notes),
             };
         }

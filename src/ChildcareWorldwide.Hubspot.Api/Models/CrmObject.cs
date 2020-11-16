@@ -12,6 +12,7 @@ namespace ChildcareWorldwide.Hubspot.Api.Models
         public bool? Archived { get; set; }
         [SuppressMessage("Usage", "CA2227:Collection properties should be read only", Justification = "Breaks deserialization")]
         public JObject? Properties { get; set; }
-        public CrmAssociations? Associations { get; set; }
+
+        public virtual string ObjectType { get; } = nameof(CrmObject).ToLowerInvariant();
     }
 }

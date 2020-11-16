@@ -174,9 +174,6 @@ namespace ChildcareWorldwide.Hubspot.Api
                 await response.EnsureSuccessStatusCodeWithResponseBodyInException();
 
                 var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
-                if (searchResults == null)
-                    return null;
-
                 return DomainModelMapper.MapDomainModel<Company>(searchResults.Results.FirstOrDefault());
             });
         }
@@ -240,9 +237,6 @@ namespace ChildcareWorldwide.Hubspot.Api
                 await response.EnsureSuccessStatusCodeWithResponseBodyInException();
 
                 var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
-                if (searchResults == null)
-                    return null;
-
                 return DomainModelMapper.MapDomainModel<Contact>(searchResults.Results.FirstOrDefault());
             });
         }
@@ -373,6 +367,52 @@ namespace ChildcareWorldwide.Hubspot.Api
 
         #endregion
 
+        #region CRM Associations API https://developers.hubspot.com/docs/api/crm/associations
+
+        public async Task AssociateCompanyAndContactAsync(Company company, Contact contact, CancellationToken cancellationToken)
+        {
+            await AssociateCrmObjects(
+                new[]
+                {
+                    new CrmAssociation(contact, company),
+                },
+                contact.ObjectType,
+                company.ObjectType,
+                cancellationToken);
+
+            await AssociateCrmObjects(
+                new[]
+                {
+                    new CrmAssociation(company, contact),
+                },
+                company.ObjectType,
+                contact.ObjectType,
+                cancellationToken);
+        }
+
+        private async Task AssociateCrmObjects(IEnumerable<CrmAssociation> associations, string fromObjectType, string toObjectType, CancellationToken cancellationToken)
+        {
+            var batch = new CrmAssociationBatch
+            {
+                Inputs = associations,
+            };
+
+            var json = JsonConvert.SerializeObject(batch, Formatting.Indented, new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new CamelCaseNamingStrategy(),
+                },
+                NullValueHandling = NullValueHandling.Ignore,
+            });
+
+            using var content = new StringContent(json, Encoding.UTF8, "application/json");
+            var response = await RequestWithRetriesAsync(async ct => await m_client.PostAsync($"/crm/v3/associations/{fromObjectType}/{toObjectType}/batch/create", content, ct), cancellationToken);
+            await response.EnsureSuccessStatusCodeWithResponseBodyInException();
+        }
+
+        #endregion
+
         private async Task<CrmObject> CreateContactAsync(Contact contact, CancellationToken cancellationToken)
         {
             using var content = new StringContent(DomainModelMapper.GetPropertiesForCreate(contact), Encoding.UTF8, "application/json");
@@ -399,7 +439,7 @@ namespace ChildcareWorldwide.Hubspot.Api
             else
             {
                 m_contactsByEmail.Remove(updatedContact.Email, out _);
-                return updatedContact;
+                return existingContact;
             }
         }
 
@@ -426,7 +466,7 @@ namespace ChildcareWorldwide.Hubspot.Api
             }
             else
             {
-                return updatedCompany;
+                return existingCompany;
             }
         }
 

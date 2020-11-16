@@ -9,7 +9,8 @@ using ChildcareWorldwide.Google.Api;
 using ChildcareWorldwide.Google.Api.Models;
 using ChildcareWorldwide.Google.Api.PubSub;
 using ChildcareWorldwide.Hubspot.Api;
-using ChildcareWorldwide.Hubspot.Api.Helpers;
+using ChildcareWorldwide.Hubspot.Api.DomainModels;
+using ChildcareWorldwide.Hubspot.Api.Mappers;
 using ChildcareWorldwide.Integration.Subscriber.Helpers;
 using ChildcareWorldwide.Integration.Subscriber.Mappers;
 using ChildcareWorldwide.Integration.Subscriber.Models;
@@ -92,7 +93,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
                         Email = result.Email,
                         Error = result.Exception.Message,
                     };
-                    await m_googleCloudFirestoreService.AddMessagingError(messagingError, cancellationToken);
+                    await m_googleCloudFirestoreService.AddMessagingErrorAsync(messagingError, cancellationToken);
                 }
 
                 return result.Response;
@@ -189,7 +190,9 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 m_logger.Debug($"Importing company from donor #{donor.Account}");
                 try
                 {
-                    await m_hubspotService.CreateOrUpdateCompanyAsync(IntegrationMapper.MapDonorToCompany(donor), cancellationToken);
+                    var company = await m_hubspotService.CreateOrUpdateCompanyAsync(IntegrationMapper.MapDonorToCompany(donor), cancellationToken);
+                    await m_googleCloudFirestoreService.AddDenariCompanyAssociationAsync(donor.Account, company.Id, cancellationToken);
+                    await TrueUpHubspotAssociations(donor, cancellationToken);
                 }
                 catch (Exception e)
                 {
@@ -223,23 +226,34 @@ namespace ChildcareWorldwide.Integration.Subscriber
             var donor = JsonConvert.DeserializeObject<Donor>(msg.Data.ToStringUtf8());
             ProcessMessageResult? result = null;
 
-            await ImportContactForEmail(donor.Email);
+            var contactIds = new List<string>();
+
+            var contact = await ImportContactForEmail(donor.Email);
+            if (contact != null)
+                contactIds.Add(contact.Id);
 
             if (donor.Email2 != donor.Email)
-                await ImportContactForEmail(donor.Email2);
+            {
+                contact = await ImportContactForEmail(donor.Email2);
+                if (contact != null)
+                    contactIds.Add(contact.Id);
+            }
+
+            await m_googleCloudFirestoreService.AddDenariContactAssociationsAsync(donor.Account, contactIds, cancellationToken);
+            await TrueUpHubspotAssociations(donor, cancellationToken);
 
             m_semaphore.Release();
             return result ?? new ProcessMessageResult(SubscriberClient.Reply.Ack);
 
-            async Task ImportContactForEmail(string? email)
+            async Task<Contact?> ImportContactForEmail(string? email)
             {
                 if (!email.IsValidEmailAddress() || await IsEmailOptedOutAsync(email))
-                    return;
+                    return null;
 
                 try
                 {
                     m_logger.Debug($"Importing contact from donor #{donor.Account} for email {email}");
-                    await m_hubspotService.CreateOrUpdateContactAsync(IntegrationMapper.MapDonorToContact(donor, email), cancellationToken);
+                    return await m_hubspotService.CreateOrUpdateContactAsync(IntegrationMapper.MapDonorToContact(donor, email), cancellationToken);
                 }
                 catch (Exception e)
                 {
@@ -252,8 +266,35 @@ namespace ChildcareWorldwide.Integration.Subscriber
                         Exception = e,
                     };
                 }
+
+                return null;
             }
         };
+
+        private async Task TrueUpHubspotAssociations(Donor donor, CancellationToken cancellationToken)
+        {
+            var association = await m_googleCloudFirestoreService.GetHubspotAssociationsForDonorAsync(donor.Account, cancellationToken);
+            if (association?.CompanyId == null)
+                return;
+            if (association.ContactIds == null)
+                return;
+
+            var company = new Company
+            {
+                Id = association.CompanyId!,
+            };
+
+            foreach (var contactId in association.ContactIds)
+            {
+                await m_hubspotService.AssociateCompanyAndContactAsync(
+                    company,
+                    new Contact
+                    {
+                        Id = contactId!,
+                    },
+                    cancellationToken);
+            }
+        }
 
         private async Task<bool> IsEmailOptedOutAsync(string? email)
         {

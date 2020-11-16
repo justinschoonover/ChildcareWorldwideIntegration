@@ -7,6 +7,8 @@ namespace ChildcareWorldwide.Hubspot.Api.DomainModels
     // CCW domain model for Hubspot Companies
     public sealed class Company : CrmObject
     {
+        public override string ObjectType => nameof(Company).ToLowerInvariant();
+
         public string? Name { get; set; }
 
         [JsonProperty("account_id")]

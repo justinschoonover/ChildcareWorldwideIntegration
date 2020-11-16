@@ -7,6 +7,8 @@ namespace ChildcareWorldwide.Hubspot.Api.DomainModels
     // CCW domain model for Hubspot Contacts
     public sealed class Contact : CrmObject
     {
+        public override string ObjectType => nameof(Contact).ToLowerInvariant();
+
         public string Email { get; set; } = default!;
 
         [JsonProperty("denari_account")]

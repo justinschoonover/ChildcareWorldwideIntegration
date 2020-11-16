@@ -54,8 +54,8 @@ namespace ChildcareWorldwide.Google.Api
 
         public async Task InitalizeAsync(CancellationToken cancellationToken)
         {
-            PublisherServiceApiClient publisherService = await PublisherServiceApiClient.CreateAsync();
-            SubscriberServiceApiClient subscriberService = await SubscriberServiceApiClient.CreateAsync();
+            PublisherServiceApiClient publisherService = await PublisherServiceApiClient.CreateAsync(cancellationToken);
+            SubscriberServiceApiClient subscriberService = await SubscriberServiceApiClient.CreateAsync(cancellationToken);
 
             // ensure each topic exists
             foreach (string topicId in Topics.AllTopics)

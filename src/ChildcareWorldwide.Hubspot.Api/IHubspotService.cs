@@ -30,6 +30,8 @@ namespace ChildcareWorldwide.Hubspot.Api
         Task<Contact?> GetContactByEmailAsync(string email, CancellationToken cancellationToken = default);
         Task<Contact> CreateOrUpdateContactAsync(Contact contact, CancellationToken cancellationToken = default);
 
+        Task AssociateCompanyAndContactAsync(Company company, Contact contact, CancellationToken cancellationToken = default);
+
         Task HydrateCompaniesCacheAsync(CancellationToken cancellationToken = default);
         Task HydrateContactsCacheAsync(CancellationToken cancellationToken = default);
 
