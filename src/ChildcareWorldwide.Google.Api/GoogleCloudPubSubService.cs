@@ -138,7 +138,7 @@ namespace ChildcareWorldwide.Google.Api
         private async Task<PublisherClient> TryGetPublisherClient(string topic)
         {
             var topicName = new TopicName(m_projectId, topic);
-            if (!m_publisherClients.TryGetValue(topicName, out PublisherClient client))
+            if (!m_publisherClients.TryGetValue(topicName, out var client))
             {
                 client = await PublisherClient.CreateAsync(topicName);
                 m_publisherClients.Add(topicName, client);
@@ -150,7 +150,7 @@ namespace ChildcareWorldwide.Google.Api
         private async Task<SubscriberClient> TryGetSubscriberClient(string subscription)
         {
             var subscriptionName = new SubscriptionName(m_projectId, subscription);
-            if (!m_subscriberClients.TryGetValue(subscriptionName, out SubscriberClient client))
+            if (!m_subscriberClients.TryGetValue(subscriptionName, out var client))
             {
                 client = await SubscriberClient.CreateAsync(subscriptionName);
                 m_subscriberClients.Add(subscriptionName, client);

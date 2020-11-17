@@ -1,10 +1,14 @@
-﻿namespace ChildcareWorldwide.Hubspot.Api.Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class CrmPropertyGroup
+    public sealed record CrmPropertyGroup
     {
-        public string Name { get; set; } = default!;
-        public string Label { get; set; } = default!;
-        public int? DisplayOrder { get; set; }
-        public bool? Archived { get; set; }
+        [NotNull]
+        public string? Name { get; init; }
+        [NotNull]
+        public string? Label { get; init; }
+        public int? DisplayOrder { get; init; }
+        public bool? Archived { get; init; }
     }
 }

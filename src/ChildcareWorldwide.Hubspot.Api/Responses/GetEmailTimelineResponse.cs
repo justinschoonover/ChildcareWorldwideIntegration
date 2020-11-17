@@ -1,12 +1,15 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Hubspot.Api.Models;
 
 namespace ChildcareWorldwide.Hubspot.Api.Responses
 {
-    public sealed class GetEmailTimelineResponse
+    public sealed record GetEmailTimelineResponse
     {
-        public bool HasMore { get; set; }
-        public string Offset { get; set; } = default!;
-        public List<EmailTimeline> Timeline { get; } = new List<EmailTimeline>();
+        public bool HasMore { get; init; }
+        [NotNull]
+        public string? Offset { get; init; }
+        [NotNull]
+        public List<EmailTimeline>? Timeline { get; init; }
     }
 }

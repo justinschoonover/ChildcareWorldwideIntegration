@@ -7,6 +7,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using ChildcareWorldwide.Denari.Api.Models;
+using ChildcareWorldwide.Denari.Api.Responses;
 using Microsoft.Extensions.Configuration;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
@@ -17,7 +18,7 @@ namespace ChildcareWorldwide.Denari.Api
 {
     public sealed class DrapiService : IDrapiService, IDisposable
     {
-        private readonly HttpClient m_client = default!;
+        private readonly HttpClient m_client;
         private readonly Logger m_logger;
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Reliability", "CA2000:Dispose objects before losing scope")]
@@ -68,14 +69,14 @@ namespace ChildcareWorldwide.Denari.Api
                 },
             });
             m_logger.Debug("Requesting from Denari API...");
-            var response = await m_client.PostAsync("Donor/firstpage", filterJson);
+            var response = await m_client.PostAsync("Donor/firstpage", filterJson, cancellationToken);
             m_logger.Trace(response);
             response.EnsureSuccessStatusCode();
 
-            var responseJson = await response.Content.ReadAsStringAsync();
+            var responseJson = await response.Content.ReadAsStringAsync(cancellationToken);
             m_logger.Trace(responseJson);
             var donors = JsonConvert.DeserializeObject<DonorList<Donor>>(responseJson);
-            return (donors?.Data.FirstOrDefault(), responseJson);
+            return (donors.Data.FirstOrDefault(), responseJson);
         }
 
         public async IAsyncEnumerable<Donor> GetDonorsAsync([EnumeratorCancellation] CancellationToken cancellationToken = default)
@@ -102,7 +103,7 @@ namespace ChildcareWorldwide.Denari.Api
                 var response = await m_client.PostAsync(endpoint, json, cancellationToken);
                 response.EnsureSuccessStatusCode();
 
-                var donorList = JsonConvert.DeserializeObject<DonorList<Donor>>(await response.Content.ReadAsStringAsync());
+                var donorList = JsonConvert.DeserializeObject<DonorList<Donor>>(await response.Content.ReadAsStringAsync(cancellationToken));
                 pageCount = donorList.PageCount;
                 currentPage = donorList.CurrentPage;
                 foreach (Donor donor in donorList.Data.Where(d => d.Account != "-1"))
@@ -125,7 +126,7 @@ namespace ChildcareWorldwide.Denari.Api
                 var response = await m_client.GetAsync($"Donor/{donorKey}/classification", cancellationToken);
                 response.EnsureSuccessStatusCode();
 
-                var donorList = JsonConvert.DeserializeObject<DonorList<DonorClassification>>(await response.Content.ReadAsStringAsync());
+                var donorList = JsonConvert.DeserializeObject<DonorList<DonorClassification>>(await response.Content.ReadAsStringAsync(cancellationToken));
                 pageCount = donorList.PageCount;
                 currentPage = donorList.CurrentPage;
                 foreach (DonorClassification donorClassification in donorList.Data)

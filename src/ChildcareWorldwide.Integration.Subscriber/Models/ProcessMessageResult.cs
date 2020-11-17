@@ -4,20 +4,11 @@ using Google.Cloud.PubSub.V1;
 
 namespace ChildcareWorldwide.Integration.Subscriber.Models
 {
-    public sealed class ProcessMessageResult
+    [System.Diagnostics.CodeAnalysis.SuppressMessage("StyleCop.CSharp.NamingRules", "SA1313:Parameter names should begin with lower-case letter", Justification = "C#9")]
+    public sealed record ProcessMessageResult(SubscriberClient.Reply Response)
     {
-        public ProcessMessageResult()
-        {
-        }
-
-        public ProcessMessageResult(SubscriberClient.Reply response)
-        {
-            Response = response;
-        }
-
-        public SubscriberClient.Reply Response { get; set; } = default!;
-        public Donor? Donor { get; set; }
-        public string? Email { get; set; }
-        public Exception? Exception { get; set; }
+        public Donor? Donor { get; init; }
+        public string? Email { get; init; }
+        public Exception? Exception { get; init; }
     }
 }

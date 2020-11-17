@@ -1,6 +1,5 @@
 ﻿using System.Diagnostics;
 using System.Threading.Tasks;
-using ChildcareWorldwide.Denari.Api;
 using ChildcareWorldwide.Integration.Manager.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;

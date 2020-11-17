@@ -70,11 +70,11 @@ namespace ChildcareWorldwide.Hubspot.Api
             while (true)
             {
                 var response = await RequestWithRetriesAsync(
-                    async cancellationToken => await m_client.GetAsync(uri, cancellationToken),
+                    async ct => await m_client.GetAsync(uri, ct),
                     cancellationToken);
                 await response.EnsureSuccessStatusCodeWithResponseBodyInException();
 
-                var companies = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+                var companies = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync(cancellationToken));
 
                 foreach (var company in companies.Results)
                 {
@@ -106,11 +106,11 @@ namespace ChildcareWorldwide.Hubspot.Api
             while (true)
             {
                 var response = await RequestWithRetriesAsync(
-                    async cancellationToken => await m_client.GetAsync(uri, cancellationToken),
+                    async ct => await m_client.GetAsync(uri, ct),
                     cancellationToken);
                 await response.EnsureSuccessStatusCodeWithResponseBodyInException();
 
-                var contacts = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+                var contacts = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync(cancellationToken));
 
                 foreach (var contact in contacts.Results)
                 {
@@ -136,20 +136,20 @@ namespace ChildcareWorldwide.Hubspot.Api
                 var filter = new CrmSearchOptions
                 {
                     FilterGroups =
-                {
-                    new CrmSearchFilterGroups
                     {
-                        Filters =
+                        new CrmSearchFilterGroups
                         {
-                            new CrmSearchFilter
+                            Filters =
                             {
-                                PropertyName = "account_id",
-                                Operator = "EQ",
-                                Value = accountId,
+                                new CrmSearchFilter
+                                {
+                                    PropertyName = "account_id",
+                                    Operator = "EQ",
+                                    Value = accountId,
+                                },
                             },
                         },
                     },
-                },
                     Properties = DomainModelMapper.GetPropertyNames(new Company()),
                     Limit = 1,
                 };
@@ -165,7 +165,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await RequestWithRetriesAsync(
-                    async cancellationToken => await m_client.PostAsync("/crm/v3/objects/companies/search", content, cancellationToken),
+                    async ct => await m_client.PostAsync("/crm/v3/objects/companies/search", content, ct),
                     cancellationToken);
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
@@ -173,7 +173,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
                 await response.EnsureSuccessStatusCodeWithResponseBodyInException();
 
-                var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync());
+                var searchResults = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync(cancellationToken));
                 return DomainModelMapper.MapDomainModel<Company>(searchResults.Results.FirstOrDefault());
             });
         }
@@ -199,20 +199,20 @@ namespace ChildcareWorldwide.Hubspot.Api
                 var filter = new CrmSearchOptions
                 {
                     FilterGroups =
-                {
-                    new CrmSearchFilterGroups
                     {
-                        Filters =
+                        new CrmSearchFilterGroups
                         {
-                            new CrmSearchFilter
+                            Filters =
                             {
-                                PropertyName = "email",
-                                Operator = "EQ",
-                                Value = email,
+                                new CrmSearchFilter
+                                {
+                                    PropertyName = "email",
+                                    Operator = "EQ",
+                                    Value = email,
+                                },
                             },
                         },
                     },
-                },
                     Properties = DomainModelMapper.GetPropertyNames(new Contact()),
                     Limit = 1,
                 };
@@ -228,7 +228,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
                 using var content = new StringContent(json, Encoding.UTF8, "application/json");
                 var response = await RequestWithRetriesAsync(
-                    async cancellationToken => await m_client.PostAsync("/crm/v3/objects/contacts/search", content, cancellationToken),
+                    async ct => await m_client.PostAsync("/crm/v3/objects/contacts/search", content, ct),
                     cancellationToken);
 
                 if (response.StatusCode == HttpStatusCode.NotFound)
@@ -268,18 +268,18 @@ namespace ChildcareWorldwide.Hubspot.Api
             var optedOutEmails = await ApiPagingUtility.IterateAsync(async offset =>
             {
                 var response = await RequestWithRetriesAsync(
-                    async cancellationToken => await m_client.GetAsync($"/email/public/v1/subscriptions/timeline?offset={offset}&limit=1000&changeType=SUBSCRIPTION_STATUS", cancellationToken),
+                    async ct => await m_client.GetAsync($"/email/public/v1/subscriptions/timeline?offset={offset}&limit=1000&changeType=SUBSCRIPTION_STATUS", ct),
                     cancellationToken);
                 await response.EnsureSuccessStatusCodeWithResponseBodyInException();
 
-                var emailTimeline = JsonConvert.DeserializeObject<GetEmailTimelineResponse>(await response.Content.ReadAsStringAsync(), new JsonSerializerSettings
+                var emailTimeline = JsonConvert.DeserializeObject<GetEmailTimelineResponse>(await response.Content.ReadAsStringAsync(cancellationToken), new JsonSerializerSettings
                 {
                     MissingMemberHandling = MissingMemberHandling.Ignore,
                 }) !;
 
                 return new PageOffsetSummary<string>(
                     emailTimeline.Timeline.Where(t => t.Changes.Any(c => c.Change == "UNSUBSCRIBED")).Select(t => t.Recipient).ToList(),
-                    emailTimeline.Offset!,
+                    emailTimeline.Offset,
                     emailTimeline.HasMore);
             });
 
@@ -309,21 +309,11 @@ namespace ChildcareWorldwide.Hubspot.Api
         public async Task<CrmPropertyGroup?> GetCompanyPropertyGroupAsync(string groupName, CancellationToken cancellationToken = default) =>
             await GetCrmPropertyGroupAsync("company", groupName, cancellationToken);
 
-        public async Task CreateContactPropertyGroupAsync(CrmPropertyGroup propertyGroup, CancellationToken cancellationToken = default)
-        {
-            // this isn't a field you set on CREATE
-            propertyGroup.Archived = null;
+        public async Task CreateContactPropertyGroupAsync(CrmPropertyGroup propertyGroup, CancellationToken cancellationToken = default) =>
+            await CreateCrmPropertyGroupAsync("contact", propertyGroup with { Archived = null }, cancellationToken);
 
-            await CreateCrmPropertyGroupAsync("contact", propertyGroup, cancellationToken);
-        }
-
-        public async Task CreateCompanyPropertyGroupAsync(CrmPropertyGroup propertyGroup, CancellationToken cancellationToken = default)
-        {
-            // this isn't a field you set on CREATE
-            propertyGroup.Archived = null;
-
-            await CreateCrmPropertyGroupAsync("company", propertyGroup, cancellationToken);
-        }
+        public async Task CreateCompanyPropertyGroupAsync(CrmPropertyGroup propertyGroup, CancellationToken cancellationToken = default) =>
+            await CreateCrmPropertyGroupAsync("company", propertyGroup with { Archived = null }, cancellationToken);
 
         #endregion
 
@@ -347,21 +337,11 @@ namespace ChildcareWorldwide.Hubspot.Api
         public async Task<CrmProperty?> GetCompanyPropertyAsync(string propertyName, CancellationToken cancellationToken = default) =>
             await GetCrmPropertyAsync("company", propertyName, cancellationToken);
 
-        public async Task CreateContactPropertyAsync(CrmProperty contactProperty, CancellationToken cancellationToken = default)
-        {
-            // this isn't a field you set on CREATE
-            contactProperty.CreatedAt = null;
+        public async Task CreateContactPropertyAsync(CrmProperty contactProperty, CancellationToken cancellationToken = default) =>
+            await CreateCrmPropertyAsync("contact", contactProperty with { CreatedAt = null }, cancellationToken);
 
-            await CreateCrmPropertyAsync("contact", contactProperty, cancellationToken);
-        }
-
-        public async Task CreateCompanyPropertyAsync(CrmProperty companyProperty, CancellationToken cancellationToken = default)
-        {
-            // this isn't a field you set on CREATE
-            companyProperty.CreatedAt = null;
-
-            await CreateCrmPropertyAsync("company", companyProperty, cancellationToken);
-        }
+        public async Task CreateCompanyPropertyAsync(CrmProperty companyProperty, CancellationToken cancellationToken = default) =>
+            await CreateCrmPropertyAsync("company", companyProperty with { CreatedAt = null }, cancellationToken);
 
         #endregion
 
@@ -417,11 +397,11 @@ namespace ChildcareWorldwide.Hubspot.Api
         {
             using var content = new StringContent(DomainModelMapper.GetPropertiesForCreate(contact), Encoding.UTF8, "application/json");
             var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.PostAsync("/crm/v3/objects/contacts", content, cancellationToken),
+                async ct => await m_client.PostAsync("/crm/v3/objects/contacts", content, ct),
                 cancellationToken);
             await response.EnsureSuccessStatusCodeWithResponseBodyInException();
             m_contactsByEmail.Remove(contact.Email, out _);
-            return JsonConvert.DeserializeObject<CrmObject>(await response.Content.ReadAsStringAsync());
+            return JsonConvert.DeserializeObject<CrmObject>(await response.Content.ReadAsStringAsync(cancellationToken));
         }
 
         private async Task<CrmObject> UpdateContactAsync(Contact updatedContact, Contact existingContact, CancellationToken cancellationToken)
@@ -430,11 +410,11 @@ namespace ChildcareWorldwide.Hubspot.Api
             {
                 using var content = new StringContent(propertiesJson, Encoding.UTF8, "application/json");
                 var response = await RequestWithRetriesAsync(
-                    async cancellationToken => await m_client.PatchAsync($"/crm/v3/objects/contacts/{existingContact.Id}", content, cancellationToken),
+                    async ct => await m_client.PatchAsync($"/crm/v3/objects/contacts/{existingContact.Id}", content, ct),
                     cancellationToken);
                 await response.EnsureSuccessStatusCodeWithResponseBodyInException();
                 m_contactsByEmail.Remove(updatedContact.Email, out _);
-                return JsonConvert.DeserializeObject<CrmObject>(await response.Content.ReadAsStringAsync());
+                return JsonConvert.DeserializeObject<CrmObject>(await response.Content.ReadAsStringAsync(cancellationToken));
             }
             else
             {
@@ -447,10 +427,10 @@ namespace ChildcareWorldwide.Hubspot.Api
         {
             using var content = new StringContent(DomainModelMapper.GetPropertiesForCreate(company), Encoding.UTF8, "application/json");
             var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.PostAsync("/crm/v3/objects/companies", content, cancellationToken),
+                async ct => await m_client.PostAsync("/crm/v3/objects/companies", content, ct),
                 cancellationToken);
             await response.EnsureSuccessStatusCodeWithResponseBodyInException();
-            return JsonConvert.DeserializeObject<CrmObject>(await response.Content.ReadAsStringAsync());
+            return JsonConvert.DeserializeObject<CrmObject>(await response.Content.ReadAsStringAsync(cancellationToken));
         }
 
         private async Task<CrmObject> UpdateCompanyAsync(Company updatedCompany, Company existingCompany, CancellationToken cancellationToken)
@@ -459,10 +439,10 @@ namespace ChildcareWorldwide.Hubspot.Api
             {
                 using var content = new StringContent(propertiesJson, Encoding.UTF8, "application/json");
                 var response = await RequestWithRetriesAsync(
-                    async cancellationToken => await m_client.PatchAsync($"/crm/v3/objects/companies/{existingCompany.Id}", content, cancellationToken),
+                    async ct => await m_client.PatchAsync($"/crm/v3/objects/companies/{existingCompany.Id}", content, ct),
                     cancellationToken);
                 await response.EnsureSuccessStatusCodeWithResponseBodyInException();
-                return JsonConvert.DeserializeObject<CrmObject>(await response.Content.ReadAsStringAsync());
+                return JsonConvert.DeserializeObject<CrmObject>(await response.Content.ReadAsStringAsync(cancellationToken));
             }
             else
             {
@@ -473,11 +453,11 @@ namespace ChildcareWorldwide.Hubspot.Api
         private async IAsyncEnumerable<CrmPropertyGroup> ListCrmPropertyGroupsAsync(string endpoint, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.GetAsync($"/crm/v3/properties/{endpoint}/groups", cancellationToken),
+                async ct => await m_client.GetAsync($"/crm/v3/properties/{endpoint}/groups", ct),
                 cancellationToken);
             await response.EnsureSuccessStatusCodeWithResponseBodyInException();
 
-            var propertyGroups = JsonConvert.DeserializeObject<GetAllPropertyGroupsResult>(await response.Content.ReadAsStringAsync());
+            var propertyGroups = JsonConvert.DeserializeObject<GetAllPropertyGroupsResult>(await response.Content.ReadAsStringAsync(cancellationToken));
             foreach (var propertyGroup in propertyGroups.Results)
                 yield return propertyGroup;
         }
@@ -485,14 +465,14 @@ namespace ChildcareWorldwide.Hubspot.Api
         private async Task<CrmPropertyGroup?> GetCrmPropertyGroupAsync(string endpoint, string groupName, CancellationToken cancellationToken)
         {
             var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.GetAsync($"/crm/v3/properties/{endpoint}/groups/{groupName}", cancellationToken),
+                async ct => await m_client.GetAsync($"/crm/v3/properties/{endpoint}/groups/{groupName}", ct),
                 cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
                 return null;
 
             await response.EnsureSuccessStatusCodeWithResponseBodyInException();
-            return JsonConvert.DeserializeObject<CrmPropertyGroup>(await response.Content.ReadAsStringAsync());
+            return JsonConvert.DeserializeObject<CrmPropertyGroup>(await response.Content.ReadAsStringAsync(cancellationToken));
         }
 
         private async Task CreateCrmPropertyGroupAsync(string endpoint, CrmPropertyGroup propertyGroup, CancellationToken cancellationToken)
@@ -508,7 +488,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.PostAsync($"/crm/v3/properties/{endpoint}/groups", content, cancellationToken),
+                async ct => await m_client.PostAsync($"/crm/v3/properties/{endpoint}/groups", content, ct),
                 cancellationToken);
             await response.EnsureSuccessStatusCodeWithResponseBodyInException();
         }
@@ -516,11 +496,11 @@ namespace ChildcareWorldwide.Hubspot.Api
         private async IAsyncEnumerable<CrmProperty> ListCrmPropertiesAsync(string endpoint, [EnumeratorCancellation] CancellationToken cancellationToken)
         {
             var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.GetAsync($"/crm/v3/properties/{endpoint}", cancellationToken),
+                async ct => await m_client.GetAsync($"/crm/v3/properties/{endpoint}", ct),
                 cancellationToken);
             await response.EnsureSuccessStatusCodeWithResponseBodyInException();
 
-            var properties = JsonConvert.DeserializeObject<GetAllPropertiesResult>(await response.Content.ReadAsStringAsync());
+            var properties = JsonConvert.DeserializeObject<GetAllPropertiesResult>(await response.Content.ReadAsStringAsync(cancellationToken));
             foreach (var property in properties.Results)
                 yield return property;
         }
@@ -528,22 +508,20 @@ namespace ChildcareWorldwide.Hubspot.Api
         private async Task<CrmProperty?> GetCrmPropertyAsync(string endpoint, string propertyName, CancellationToken cancellationToken)
         {
             var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.GetAsync($"/crm/v3/properties/{endpoint}/{propertyName}", cancellationToken),
+                async ct => await m_client.GetAsync($"/crm/v3/properties/{endpoint}/{propertyName}", ct),
                 cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
                 return null;
 
             await response.EnsureSuccessStatusCodeWithResponseBodyInException();
-            return JsonConvert.DeserializeObject<CrmProperty>(await response.Content.ReadAsStringAsync());
+            return JsonConvert.DeserializeObject<CrmProperty>(await response.Content.ReadAsStringAsync(cancellationToken));
         }
 
         private async Task CreateCrmPropertyAsync(string endpoint, CrmProperty contactProperty, CancellationToken cancellationToken)
         {
             // this isn't a field you set on CREATE
-            contactProperty.CreatedAt = null;
-
-            var json = JsonConvert.SerializeObject(contactProperty, Formatting.Indented, new JsonSerializerSettings
+            var json = JsonConvert.SerializeObject(contactProperty with { CreatedAt = null }, Formatting.Indented, new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
                 {
@@ -554,7 +532,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
             using var content = new StringContent(json, Encoding.UTF8, "application/json");
             var response = await RequestWithRetriesAsync(
-                async cancellationToken => await m_client.PostAsync($"/crm/v3/properties/{endpoint}", content, cancellationToken),
+                async c => await m_client.PostAsync($"/crm/v3/properties/{endpoint}", content, cancellationToken),
                 cancellationToken);
             await response.EnsureSuccessStatusCodeWithResponseBodyInException();
         }
@@ -596,7 +574,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
             protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
             {
-                request.RequestUri = new Uri(QueryHelpers.AddQueryString(request.RequestUri.AbsoluteUri, m_authParams));
+                request.RequestUri = new Uri(QueryHelpers.AddQueryString(request.RequestUri?.AbsoluteUri, m_authParams));
                 return await base.SendAsync(request, cancellationToken);
             }
         }

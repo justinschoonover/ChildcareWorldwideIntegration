@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Denari.Api;
 using ChildcareWorldwide.Google.Api;
 using ChildcareWorldwide.Hubspot.Api;
-using Google.Cloud.Diagnostics.AspNetCore;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;

@@ -1,20 +1,23 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
+using ChildcareWorldwide.Denari.Api.Models;
 
-namespace ChildcareWorldwide.Denari.Api.Models
+namespace ChildcareWorldwide.Denari.Api.Responses
 {
-    public sealed class DonorList<T>
+    public sealed record DonorList<T>
     {
-        public string ResultCode { get; set; } = default!;
-        public string Message { get; set; } = default!;
-        public string ErrorNumber { get; set; } = default!;
-        public string ErrorMessage { get; set; } = default!;
-        public string ListName { get; set; } = default!;
-        public int PageSize { get; set; } = default!;
-        public int PageCount { get; set; } = default!;
-        public int CurrentPage { get; set; } = default!;
-        public string Order { get; set; } = default!;
-        public List<string> Fields { get; } = new List<string>();
-        public DrapiFilter Filter { get; set; } = default!;
-        public List<T> Data { get; } = new List<T>();
+        public string? ResultCode { get; init; }
+        public string? Message { get; init; }
+        public string? ErrorNumber { get; init; }
+        public string? ErrorMessage { get; init; }
+        public string? ListName { get; init; }
+        public int PageSize { get; init; }
+        public int PageCount { get; init; }
+        public int CurrentPage { get; init; }
+        public string? Order { get; init; }
+        public List<string>? Fields { get; init; }
+        public DrapiFilter? Filter { get; init; }
+        [NotNull]
+        public List<T>? Data { get; init; }
     }
 }

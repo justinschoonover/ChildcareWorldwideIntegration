@@ -4,12 +4,12 @@ using Google.Cloud.Firestore;
 namespace ChildcareWorldwide.Google.Api.Models
 {
     [FirestoreData]
-    public sealed class CrmAssociation
+    public record CrmAssociation
     {
         [FirestoreProperty]
-        public string? CompanyId { get; set; }
+        public string? CompanyId { get; init; }
 
         [FirestoreProperty]
-        public IEnumerable<string>? ContactIds { get; set; }
+        public IEnumerable<string>? ContactIds { get; init; }
     }
 }

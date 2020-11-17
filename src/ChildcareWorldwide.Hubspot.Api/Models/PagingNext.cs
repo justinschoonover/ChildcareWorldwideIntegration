@@ -1,8 +1,12 @@
-﻿namespace ChildcareWorldwide.Hubspot.Api.Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class PagingNext
+    public sealed record PagingNext
     {
-        public string After { get; set; } = default!;
-        public string Link { get; set; } = default!;
+        [NotNull]
+        public string? After { get; init; }
+        [NotNull]
+        public string? Link { get; init; }
     }
 }

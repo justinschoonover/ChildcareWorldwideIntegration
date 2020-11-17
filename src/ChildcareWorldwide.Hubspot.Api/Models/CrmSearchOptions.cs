@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class CrmSearchOptions
+    public sealed record CrmSearchOptions
     {
-        public List<CrmSearchFilterGroups> FilterGroups { get; } = new List<CrmSearchFilterGroups>();
-        public List<string> Sorts { get; } = new List<string>();
-        public string? Query { get; set; }
+        [NotNull]
+        public List<CrmSearchFilterGroups>? FilterGroups { get; init; }
+        public List<string>? Sorts { get; init; }
+        public string? Query { get; init; }
 
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only")]
-        public List<string> Properties { get; set; } = new List<string>();
-        public int? Limit { get; set; }
-        public int? After { get; set; }
+        public List<string>? Properties { get; init; }
+        public int? Limit { get; init; }
+        public int? After { get; init; }
     }
 }

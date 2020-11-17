@@ -1,12 +1,14 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Hubspot.Api.Models;
 
 namespace ChildcareWorldwide.Hubspot.Api.Responses
 {
-    public sealed class GetCrmObjectsResult
+    public sealed record GetCrmObjectsResult
     {
-        public int? Total { get; set; }
-        public List<CrmObject> Results { get; } = new List<CrmObject>();
-        public PagingInfo? Paging { get; set; }
+        public int? Total { get; init; }
+        [NotNull]
+        public List<CrmObject>? Results { get; init; }
+        public PagingInfo? Paging { get; init; }
     }
 }
