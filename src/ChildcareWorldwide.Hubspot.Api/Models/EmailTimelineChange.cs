@@ -1,9 +1,7 @@
-﻿using System;
-
-namespace ChildcareWorldwide.Hubspot.Api.Models
+﻿namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class EmailTimelineChange
+    public sealed record EmailTimelineChange
     {
-        public string? Change { get; set; }
+        public string? Change { get; init; }
     }
 }

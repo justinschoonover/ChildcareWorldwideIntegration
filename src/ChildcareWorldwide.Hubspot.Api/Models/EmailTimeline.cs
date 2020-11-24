@@ -1,11 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class EmailTimeline
+    public sealed record EmailTimeline
     {
-        public string Recipient { get; set; } = default!;
-        public List<EmailTimelineChange> Changes { get; } = new List<EmailTimelineChange>();
+        [NotNull]
+        public string? Recipient { get; set; }
+        [NotNull]
+        public List<EmailTimelineChange>? Changes { get; init; }
     }
 }

@@ -10,7 +10,6 @@ using ChildcareWorldwide.Google.Api.Models;
 using ChildcareWorldwide.Google.Api.PubSub;
 using ChildcareWorldwide.Hubspot.Api;
 using ChildcareWorldwide.Hubspot.Api.DomainModels;
-using ChildcareWorldwide.Hubspot.Api.Mappers;
 using ChildcareWorldwide.Integration.Subscriber.Helpers;
 using ChildcareWorldwide.Integration.Subscriber.Mappers;
 using ChildcareWorldwide.Integration.Subscriber.Models;
@@ -154,9 +153,8 @@ namespace ChildcareWorldwide.Integration.Subscriber
             {
                 m_logger.Error(e);
                 m_semaphore.Release();
-                return new ProcessMessageResult
+                return new ProcessMessageResult(SubscriberClient.Reply.Ack)
                 {
-                    Response = SubscriberClient.Reply.Ack,
                     Exception = e,
                 };
             }
@@ -198,9 +196,8 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 {
                     m_logger.Error(e, $"Error creating or updating company in Hubspot for donor {donor.Account}.");
                     m_semaphore.Release();
-                    return new ProcessMessageResult
+                    return new ProcessMessageResult(SubscriberClient.Reply.Ack)
                     {
-                        Response = SubscriberClient.Reply.Ack,
                         Donor = donor,
                         Exception = e,
                     };
@@ -258,9 +255,8 @@ namespace ChildcareWorldwide.Integration.Subscriber
                 catch (Exception e)
                 {
                     m_logger.Error(e, $"Error creating or updating contact in Hubspot for email {email}.");
-                    result = new ProcessMessageResult
+                    result = new ProcessMessageResult(SubscriberClient.Reply.Ack)
                     {
-                        Response = SubscriberClient.Reply.Ack,
                         Donor = donor,
                         Email = email,
                         Exception = e,

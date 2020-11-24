@@ -3,15 +3,15 @@ using ChildcareWorldwide.Hubspot.Api.Models;
 
 namespace ChildcareWorldwide.Hubspot.Api.Responses
 {
-    public sealed class GetEmailSubscriptionStatusResult
+    public sealed record GetEmailSubscriptionStatusResult
     {
-        public bool Subscribed { get; set; }
-        public bool MarkedAsSpam { get; set; }
-        public bool UnsubscribeFromPortal { get; set; }
-        public string? PortalId { get; set; }
-        public bool Bounced { get; set; }
-        public string? Email { get; set; }
-        public List<EmailSubscriptionStatus> SubscriptionStatuses { get; } = new List<EmailSubscriptionStatus>();
-        public string? Status { get; set; }
+        public bool Subscribed { get; init; }
+        public bool MarkedAsSpam { get; init; }
+        public bool UnsubscribeFromPortal { get; init; }
+        public string? PortalId { get; init; }
+        public bool Bounced { get; init; }
+        public string? Email { get; init; }
+        public List<EmailSubscriptionStatus>? SubscriptionStatuses { get; init; }
+        public string? Status { get; init; }
     }
 }

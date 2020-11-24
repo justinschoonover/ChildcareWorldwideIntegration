@@ -1,24 +1,27 @@
-﻿using Google.Cloud.Firestore;
+﻿using System.Diagnostics.CodeAnalysis;
+using Google.Cloud.Firestore;
 using Google.Protobuf;
 
 namespace ChildcareWorldwide.Google.Api.Models
 {
     [FirestoreData]
-    public sealed class MessagingError
+    public record MessagingError
     {
         [FirestoreProperty]
-        public string Topic { get; set; } = default!;
+        [NotNull]
+        public string? Topic { get; init; }
 
         [FirestoreProperty]
-        public ByteString MessageData { get; set; } = default!;
+        [NotNull]
+        public ByteString? MessageData { get; init; }
 
         [FirestoreProperty]
-        public string? DenariAccount { get; set; }
+        public string? DenariAccount { get; init; }
 
         [FirestoreProperty]
-        public string? Email { get; set; }
+        public string? Email { get; init; }
 
         [FirestoreProperty]
-        public string? Error { get; set; }
+        public string? Error { get; init; }
     }
 }

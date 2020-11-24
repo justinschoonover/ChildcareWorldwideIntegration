@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -26,7 +27,7 @@ namespace ChildcareWorldwide.Google.Api.Helpers
                 var credentialsFile = Environment.GetEnvironmentVariable("GOOGLE_APPLICATION_CREDENTIALS");
                 if (File.Exists(credentialsFile))
                 {
-                    var credentials = JsonConvert.DeserializeObject<GoogleServiceAccountKey>(File.ReadAllText(credentialsFile));
+                    var credentials = JsonConvert.DeserializeObject<GoogleServiceAccountKey>(await File.ReadAllTextAsync(credentialsFile!));
                     return credentials.ProjectId;
                 }
 
@@ -34,10 +35,11 @@ namespace ChildcareWorldwide.Google.Api.Helpers
             }
         }
 
-        private sealed class GoogleServiceAccountKey
+        private sealed record GoogleServiceAccountKey
         {
             [JsonProperty(NamingStrategyType = typeof(SnakeCaseNamingStrategy))]
-            public string ProjectId { get; set; } = default!;
+            [NotNull]
+            public string? ProjectId { get; init; }
         }
     }
 }

@@ -5,193 +5,190 @@ using Newtonsoft.Json;
 
 namespace ChildcareWorldwide.Denari.Api.Models
 {
-    public sealed class Donor
+    public record Donor
     {
-        public Donor(string donorKey)
-        {
-            DonorKey = donorKey;
-        }
+        public Donor(string donorKey) => DonorKey = donorKey;
 
         [JsonProperty("Donor_Account")]
-        public string Account { get; set; } = default!;
+        public string Account { get; init; } = default!;
 
         [JsonProperty("Donor_FirstName")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? FirstName { get; set; }
+        public string? FirstName { get; init; }
 
         [JsonProperty("Donor_LastName")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? LastName { get; set; }
+        public string? LastName { get; init; }
 
         [JsonProperty("Donor_Spouse")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Spouse { get; set; }
+        public string? Spouse { get; init; }
 
         [JsonProperty("Donor_Contactname")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? ContactName { get; set; }
+        public string? ContactName { get; init; }
 
         [JsonProperty("Donor_Salutation")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Salutation { get; set; }
+        public string? Salutation { get; init; }
 
         [JsonProperty("Donor_Organization")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Organization { get; set; }
+        public string? Organization { get; init; }
 
         [JsonProperty("Donor_Street")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Street { get; set; }
+        public string? Street { get; init; }
 
         [JsonProperty("Donor_Street2")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Street2 { get; set; }
+        public string? Street2 { get; init; }
 
         [JsonProperty("Donor_City")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? City { get; set; }
+        public string? City { get; init; }
 
         [JsonProperty("Donor_State")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? State { get; set; }
+        public string? State { get; init; }
 
         [JsonProperty("Donor_Zip")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Zip { get; set; }
+        public string? Zip { get; init; }
 
         [JsonProperty("Donor_Country")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Country { get; set; }
+        public string? Country { get; init; }
 
         [JsonProperty("Donor_JobTitle")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? JobTitle { get; set; }
+        public string? JobTitle { get; init; }
 
         [JsonProperty("Donor_Email")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Email { get; set; }
+        public string? Email { get; init; }
 
         [JsonProperty("Donor_Email2")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Email2 { get; set; }
+        public string? Email2 { get; init; }
 
         [JsonProperty("Donor_Phone")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Phone { get; set; }
+        public string? Phone { get; init; }
 
         [JsonProperty("Donor_WorkPhone")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? WorkPhone { get; set; }
+        public string? WorkPhone { get; init; }
 
         [JsonProperty("Donor_CellPhone")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? CellPhone { get; set; }
+        public string? CellPhone { get; init; }
 
         [JsonProperty("Donor_Notes")]
         [JsonConverter(typeof(SplitCollectionOnCrLfJsonConverter))]
-        public IEnumerable<string> Notes { get; set; } = default!;
+        public IEnumerable<string> Notes { get; init; } = default!;
 
         [JsonProperty("Donor_DOB")]
-        public DateTime? Dob { get; set; }
+        public DateTime? Dob { get; init; }
 
         [JsonProperty("Donor_DOBSpouse")]
-        public DateTime? DobSpouse { get; set; }
+        public DateTime? DobSpouse { get; init; }
 
         [JsonProperty("Donor_Gender")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Gender { get; set; }
+        public string? Gender { get; init; }
 
         [JsonProperty("Donor_Username")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Username { get; set; }
+        public string? Username { get; init; }
 
         [JsonProperty("Donor_GiftCount")]
-        public int GiftCount { get; set; }
+        public int GiftCount { get; init; }
 
         [JsonProperty("Donor_FirstGiftDate")]
-        public DateTime? FirstGiftDate { get; set; }
+        public DateTime? FirstGiftDate { get; init; }
 
         [JsonProperty("Donor_FirstGiftAmount")]
-        public decimal FirstGiftAmount { get; set; }
+        public decimal FirstGiftAmount { get; init; }
 
         [JsonProperty("Donor_LastGiftDate")]
-        public DateTime? LastGiftDate { get; set; }
+        public DateTime? LastGiftDate { get; init; }
 
         [JsonProperty("Donor_LastGiftAmount")]
-        public decimal LastGiftAmount { get; set; }
+        public decimal LastGiftAmount { get; init; }
 
         [JsonProperty("Donor_BigGift")]
-        public decimal BigGift { get; set; }
+        public decimal BigGift { get; init; }
 
         [JsonProperty("Donor_AverageGift")]
-        public decimal AverageGift { get; set; }
+        public decimal AverageGift { get; init; }
 
         [JsonProperty("Donor_TotalGifts")]
-        public decimal TotalGifts { get; set; }
+        public decimal TotalGifts { get; init; }
 
         [JsonProperty("Donor_GiftsYTD")]
-        public decimal GiftsYtd { get; set; }
+        public decimal GiftsYtd { get; init; }
 
         [JsonProperty("Donor_GiftsLastYear")]
-        public decimal GiftsLastYear { get; set; }
+        public decimal GiftsLastYear { get; init; }
 
         [JsonProperty("Donor_Gifts2YearsAgo")]
-        public decimal Gifts2YearsAgo { get; set; }
+        public decimal Gifts2YearsAgo { get; init; }
 
         [JsonProperty("Donor_Gifts3YearsAgo")]
-        public decimal Gifts3YearsAgo { get; set; }
+        public decimal Gifts3YearsAgo { get; init; }
 
         [JsonProperty("Donor_Gifts4YearsAgo")]
-        public decimal Gifts4YearsAgo { get; set; }
+        public decimal Gifts4YearsAgo { get; init; }
 
         [JsonProperty("Donor_Added_Datetime")]
-        public DateTime? AddedDateTime { get; set; }
+        public DateTime? AddedDateTime { get; init; }
 
         [JsonProperty("Donor_Added_Date")]
-        public DateTime? AddedDate { get; set; }
+        public DateTime? AddedDate { get; init; }
 
         [JsonProperty("Donor_Type")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Type { get; set; }
+        public string? Type { get; init; }
 
         [JsonProperty("Donor_Jurisdiction_Code")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? JurisdictionCode { get; set; }
+        public string? JurisdictionCode { get; init; }
 
         [JsonProperty("Donor_Jurisdiction")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Jurisdiction { get; set; }
+        public string? Jurisdiction { get; init; }
 
         [JsonProperty("Donor_Mailcode")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Mailcode { get; set; }
+        public string? Mailcode { get; init; }
 
         [JsonProperty("Donor_Appeal_Code")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? AppealCode { get; set; }
+        public string? AppealCode { get; init; }
 
         [JsonProperty("Donor_Appeal")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string? Appeal { get; set; }
+        public string? Appeal { get; init; }
 
         [JsonProperty("Donor_JUR_REF")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string JurisdictionKey { get; set; } = default!;
+        public string JurisdictionKey { get; init; } = default!;
 
         [JsonProperty("Donor_TYPE_REF")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string DonorTypeKey { get; set; } = default!;
+        public string DonorTypeKey { get; init; } = default!;
 
         [JsonProperty("Donor_NAME1_REF")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string DonorKey { get; set; } = default!;
+        public string DonorKey { get; init; } = default!;
 
         [JsonProperty("Donor_SOL_REF")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string AppealKey { get; set; } = default!;
+        public string AppealKey { get; init; } = default!;
 
         [JsonProperty("COMP_REF")]
         [JsonConverter(typeof(TrimStringJsonConverter))]
-        public string CompanyKey { get; set; } = default!;
+        public string CompanyKey { get; init; } = default!;
     }
 }

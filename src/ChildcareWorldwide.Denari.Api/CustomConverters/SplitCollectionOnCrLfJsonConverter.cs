@@ -10,8 +10,8 @@ namespace ChildcareWorldwide.Denari.Api.CustomConverters
         private const string CrLf = "\r\n";
 
         public override IEnumerable<string> ReadJson(JsonReader reader, Type objectType, [AllowNull] IEnumerable<string> existingValue, bool hasExistingValue, JsonSerializer serializer) =>
-            new List<string>(((string?)reader.Value)?.Split(CrLf));
+            new List<string>(((string?)reader.Value)?.Split(CrLf) ?? Array.Empty<string>());
         public override void WriteJson(JsonWriter writer, [AllowNull] IEnumerable<string> value, JsonSerializer serializer) =>
-            writer.WriteValue(string.Join(CrLf, value));
+            writer.WriteValue(string.Join(CrLf, value ?? Array.Empty<string>()));
     }
 }

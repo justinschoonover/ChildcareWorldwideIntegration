@@ -1,20 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class CrmProperty
+    public sealed record CrmProperty
     {
-        public string Name { get; set; } = default!;
-        public string Label { get; set; } = default!;
-        public string Type { get; set; } = default!;
-        public string FieldType { get; set; } = default!;
-        public string GroupName { get; set; } = default!;
-        public string? Description { get; set; }
-        public List<CrmPropertyOptions> Options { get; } = new List<CrmPropertyOptions>();
-        public int? DisplayOrder { get; set; }
-        public bool? HasUniqueValue { get; set; }
-        public bool? Hidden { get; set; }
-        public DateTime? CreatedAt { get; set; }
+        [NotNull]
+        public string? Name { get; init; }
+        [NotNull]
+        public string? Label { get; init; }
+        [NotNull]
+        public string? Type { get; init; }
+        [NotNull]
+        public string? FieldType { get; init; }
+        [NotNull]
+        public string? GroupName { get; init; }
+        public string? Description { get; init; }
+        public List<CrmPropertyOptions>? Options { get; init; }
+        public int? DisplayOrder { get; init; }
+        public bool? HasUniqueValue { get; init; }
+        public bool? Hidden { get; init; }
+        public DateTime? CreatedAt { get; init; }
     }
 }

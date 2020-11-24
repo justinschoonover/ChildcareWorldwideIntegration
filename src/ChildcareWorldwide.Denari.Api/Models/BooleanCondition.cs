@@ -2,11 +2,9 @@
 
 namespace ChildcareWorldwide.Denari.Api.Models
 {
-    public sealed class BooleanCondition
+    public record BooleanCondition
     {
-        public string JoinAs { get; set; } = default!;
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Usage", "CA2227:Collection properties should be read only")]
-        public List<BooleanTerm> TermList { get; set; } = new List<BooleanTerm>();
+        public string? JoinAs { get; init; }
+        public List<BooleanTerm>? TermList { get; init; }
     }
 }

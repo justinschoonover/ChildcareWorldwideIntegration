@@ -1,9 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 
 namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class CrmSearchFilterGroups
+    public sealed record CrmSearchFilterGroups
     {
-        public List<CrmSearchFilter> Filters { get; } = new List<CrmSearchFilter>();
+        [NotNull]
+        public List<CrmSearchFilter>? Filters { get; init; }
     }
 }

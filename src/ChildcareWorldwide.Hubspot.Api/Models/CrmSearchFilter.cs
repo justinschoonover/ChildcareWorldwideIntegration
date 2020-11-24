@@ -1,9 +1,13 @@
-﻿namespace ChildcareWorldwide.Hubspot.Api.Models
+﻿using System.Diagnostics.CodeAnalysis;
+
+namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class CrmSearchFilter
+    public sealed record CrmSearchFilter
     {
-        public string PropertyName { get; set; } = default!;
-        public string Operator { get; set; } = default!;
-        public string? Value { get; set; }
+        [NotNull]
+        public string? PropertyName { get; init; }
+        [NotNull]
+        public string? Operator { get; init; }
+        public string? Value { get; init; }
     }
 }

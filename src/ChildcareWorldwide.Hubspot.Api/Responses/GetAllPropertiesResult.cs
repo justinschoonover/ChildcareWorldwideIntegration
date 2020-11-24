@@ -1,10 +1,12 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Hubspot.Api.Models;
 
 namespace ChildcareWorldwide.Hubspot.Api.Responses
 {
-    public sealed class GetAllPropertiesResult
+    public sealed record GetAllPropertiesResult
     {
-        public List<CrmProperty> Results { get; } = new List<CrmProperty>();
+        [NotNull]
+        public List<CrmProperty>? Results { get; init; }
     }
 }

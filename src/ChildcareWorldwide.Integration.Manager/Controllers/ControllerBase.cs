@@ -16,8 +16,8 @@ namespace ChildcareWorldwide.Integration.Manager.Controllers
                 {
                     PageTitle = pageTitle,
                 },
-                FullName = user.Identity.Name,
-                AvatarUri = new Uri(user.Claims.SingleOrDefault(c => c.Type == "urn:google:picture").Value ?? string.Empty),
+                FullName = user.Identity?.Name,
+                AvatarUri = new Uri(user.Claims.SingleOrDefault(c => c.Type == "urn:google:picture")?.Value ?? string.Empty),
             };
         }
 
@@ -30,8 +30,8 @@ namespace ChildcareWorldwide.Integration.Manager.Controllers
                 {
                     PageTitle = pageTitle,
                 },
-                FullName = user.Identity.Name,
-                AvatarUri = new Uri(user.Claims.SingleOrDefault(c => c.Type == "urn:google:picture").Value ?? string.Empty),
+                FullName = user.Identity?.Name,
+                AvatarUri = new Uri(user.Claims.SingleOrDefault(c => c.Type == "urn:google:picture")?.Value ?? string.Empty),
                 Data = viewModel,
             };
         }

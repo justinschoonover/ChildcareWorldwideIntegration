@@ -2,13 +2,13 @@
 
 namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed class EmailSubscriptionStatus
+    public sealed record EmailSubscriptionStatus
     {
-        public string? Id { get; set; }
-        public DateTime UpdatedAt { get; set; }
-        public bool Subscribed { get; set; }
-        public string? OptState { get; set; }
-        public string? LegalBasis { get; set; }
-        public string? LegalBasisExplanation { get; set; }
+        public string? Id { get; init; }
+        public DateTime UpdatedAt { get; init; }
+        public bool Subscribed { get; init; }
+        public string? OptState { get; init; }
+        public string? LegalBasis { get; init; }
+        public string? LegalBasisExplanation { get; init; }
     }
 }
