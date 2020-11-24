@@ -135,11 +135,11 @@ namespace ChildcareWorldwide.Hubspot.Api
 
                 var filter = new CrmSearchOptions
                 {
-                    FilterGroups =
+                    FilterGroups = new List<CrmSearchFilterGroups>
                     {
                         new CrmSearchFilterGroups
                         {
-                            Filters =
+                            Filters = new List<CrmSearchFilter>
                             {
                                 new CrmSearchFilter
                                 {
@@ -198,11 +198,11 @@ namespace ChildcareWorldwide.Hubspot.Api
 
                 var filter = new CrmSearchOptions
                 {
-                    FilterGroups =
+                    FilterGroups = new List<CrmSearchFilterGroups>
                     {
                         new CrmSearchFilterGroups
                         {
-                            Filters =
+                            Filters = new List<CrmSearchFilter>
                             {
                                 new CrmSearchFilter
                                 {
