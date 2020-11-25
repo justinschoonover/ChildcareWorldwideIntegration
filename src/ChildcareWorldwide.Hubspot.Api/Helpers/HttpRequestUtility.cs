@@ -3,21 +3,21 @@ using System.Threading.Tasks;
 
 namespace ChildcareWorldwide.Hubspot.Api.Helpers
 {
-    internal static class HttpRequestUtility
-    {
-        public static async Task EnsureSuccessStatusCodeWithResponseBodyInException(this HttpResponseMessage? response)
-        {
-            if (response == null)
-                return;
+	internal static class HttpRequestUtility
+	{
+		public static async Task EnsureSuccessStatusCodeWithResponseBodyInException(this HttpResponseMessage? response)
+		{
+			if (response == null)
+				return;
 
-            try
-            {
-                response.EnsureSuccessStatusCode();
-            }
-            catch (HttpRequestException e)
-            {
-                throw new HttpRequestException(await response.Content.ReadAsStringAsync(), e);
-            }
-        }
-    }
+			try
+			{
+				response.EnsureSuccessStatusCode();
+			}
+			catch (HttpRequestException e)
+			{
+				throw new HttpRequestException(await response.Content.ReadAsStringAsync(), e);
+			}
+		}
+	}
 }

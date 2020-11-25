@@ -10,151 +10,137 @@ using Newtonsoft.Json.Linq;
 
 namespace ChildcareWorldwide.Hubspot.Api.Mappers
 {
-    public static class DomainModelMapper
-    {
-        public static T? MapDomainModel<T>(CrmObject? obj)
-            where T : CrmObject, new()
-        {
-            if (obj == null)
-                return null;
+	public static class DomainModelMapper
+	{
+		public static T? MapDomainModel<T>(CrmObject? obj)
+			where T : CrmObject, new()
+		{
+			if (obj == null)
+				return null;
 
-            var mappedObj = new T
-            {
-                Id = obj.Id,
-                CreatedAt = obj.CreatedAt,
-                UpdatedAt = obj.UpdatedAt,
-            };
+			var mappedObj = new T
+			{
+				Id = obj.Id,
+				CreatedAt = obj.CreatedAt,
+				UpdatedAt = obj.UpdatedAt,
+			};
 
-            if (obj.Properties == null)
-                return mappedObj;
+			if (obj.Properties == null)
+				return mappedObj;
 
-            foreach (JProperty property in obj.Properties.Properties())
-            {
-                TrySetValue(mappedObj, property.Name, property.Value.ToString());
-            }
+			foreach (var property in obj.Properties.Properties())
+				TrySetValue(mappedObj, property.Name, property.Value.ToString());
 
-            return mappedObj;
-        }
+			return mappedObj;
+		}
 
-        public static string GetPropertiesForCreate<T>(T domainModel)
-        {
-            JObject properties = new JObject();
-            foreach (var (property, jsonProperty) in GetDomainModelProperties(domainModel))
-            {
-                if (property.GetValue(domainModel) != null)
-                    properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLower(CultureInfo.InvariantCulture), property.GetValue(domainModel)));
-            }
+		public static string GetPropertiesForCreate<T>(T domainModel)
+		{
+			var properties = new JObject();
+			foreach (var (property, jsonProperty) in GetDomainModelProperties(domainModel))
+			{
+				if (property.GetValue(domainModel) != null)
+					properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLower(CultureInfo.InvariantCulture), property.GetValue(domainModel)));
+			}
 
-            return JsonConvert.SerializeObject(new JObject(new JProperty("properties", properties)), Formatting.Indented, new DateTimeJsonConverter(), new DecimalJsonConverter());
-        }
+			return JsonConvert.SerializeObject(new JObject(new JProperty("properties", properties)), Formatting.Indented, new DateTimeJsonConverter(), new DecimalJsonConverter());
+		}
 
-        [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "C#9")]
-        public static bool GetPropertiesForUpdate<T>(T updated, T existing, out string result)
-        {
-            JObject properties = new JObject();
-            var existingProperties = GetDomainModelProperties(existing).ToDictionary(p => p.PropertyInfo.Name, p => p);
-            foreach (var (property, jsonProperty) in GetDomainModelProperties(updated))
-            {
-                if (!property.IsValueNullOrEmpty(updated) && !property.GetValue(updated)!.Equals(existingProperties[property.Name].PropertyInfo.GetValue(existing)))
-                    properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLower(CultureInfo.InvariantCulture), property.GetValue(updated)));
-            }
+		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "C#9")]
+		public static bool GetPropertiesForUpdate<T>(T updated, T existing, out string result)
+		{
+			var properties = new JObject();
+			var existingProperties = GetDomainModelProperties(existing).ToDictionary(p => p.PropertyInfo.Name, p => p);
+			foreach (var (property, jsonProperty) in GetDomainModelProperties(updated))
+			{
+				if (!property.IsValueNullOrEmpty(updated) && !property.GetValue(updated)!.Equals(existingProperties[property.Name].PropertyInfo.GetValue(existing)))
+					properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLower(CultureInfo.InvariantCulture), property.GetValue(updated)));
+			}
 
-            result = JsonConvert.SerializeObject(new JObject(new JProperty("properties", properties)), Formatting.Indented, new DateTimeJsonConverter(), new DecimalJsonConverter());
-            return properties.Count > 0;
-        }
+			result = JsonConvert.SerializeObject(new JObject(new JProperty("properties", properties)), Formatting.Indented, new DateTimeJsonConverter(), new DecimalJsonConverter());
+			return properties.Count > 0;
+		}
 
-        public static List<string> GetPropertyNames<T>(T domainModel)
-        {
-            return GetDomainModelProperties(domainModel).Select(p => p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name.ToLower(CultureInfo.InvariantCulture)).ToList();
-        }
+		public static List<string> GetPropertyNames<T>(T domainModel) => GetDomainModelProperties(domainModel).Select(p => p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name.ToLower(CultureInfo.InvariantCulture)).ToList();
 
-        [SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "C#9")]
-        private static bool IsValueNullOrEmpty<T>([NotNullWhen(false)] this PropertyInfo property, T instance)
-        {
-            if (property.GetValue(instance) == null)
-                return true;
+		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "C#9")]
+		private static bool IsValueNullOrEmpty<T>([NotNullWhen(false)] this PropertyInfo property, T instance)
+		{
+			if (property.GetValue(instance) == null)
+				return true;
 
-            return (Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType) == typeof(string) && property.GetValue(instance)!.Equals(string.Empty);
-        }
+			return (Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType) == typeof(string) && property.GetValue(instance)!.Equals(string.Empty);
+		}
 
-        private static bool TrySetValue<T>(T domainModel, string name, string value)
-        {
-            try
-            {
-                // actual property names
-                var propertyInfo = domainModel?.GetType().GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
-                if (propertyInfo == null)
-                {
-                    var matchingProperties = domainModel?
-                        .GetType()
-                        .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                        .Select(p => (Property: p, JsonProperty: p.GetCustomAttribute<JsonPropertyAttribute>()))
-                        .Where(pair => pair.JsonProperty != null && pair.JsonProperty.PropertyName == name)
-                        .Select(filteredPair => filteredPair.Property)
-                        .ToList();
+		private static bool TrySetValue<T>(T domainModel, string name, string value)
+		{
+			try
+			{
+				// actual property names
+				var propertyInfo = domainModel?.GetType().GetProperty(name, BindingFlags.IgnoreCase | BindingFlags.Public | BindingFlags.Instance);
+				if (propertyInfo == null)
+				{
+					var matchingProperties = domainModel?
+						.GetType()
+						.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+						.Select(p => (Property: p, JsonProperty: p.GetCustomAttribute<JsonPropertyAttribute>()))
+						.Where(pair => pair.JsonProperty != null && pair.JsonProperty.PropertyName == name)
+						.Select(filteredPair => filteredPair.Property)
+						.ToList();
 
-                    if (matchingProperties == null || matchingProperties.Count > 1)
-                        throw new InvalidOperationException($"Multiple {typeof(T)} properties map to the same Hubspot field.");
+					if (matchingProperties == null || matchingProperties.Count > 1)
+						throw new InvalidOperationException($"Multiple {typeof(T)} properties map to the same Hubspot field.");
 
-                    propertyInfo = matchingProperties.SingleOrDefault();
-                }
+					propertyInfo = matchingProperties.SingleOrDefault();
+				}
 
-                // property isn't present in our model
-                if (propertyInfo == null)
-                    return false;
+				// property isn't present in our model
+				if (propertyInfo == null)
+					return false;
 
-                Type t = Nullable.GetUnderlyingType(propertyInfo.PropertyType) ?? propertyInfo.PropertyType;
-                var convertedValue = Convert.ChangeType(value, t, CultureInfo.InvariantCulture);
-                propertyInfo.SetValue(domainModel, convertedValue, null);
-                return true;
-            }
-            catch (Exception)
-            {
-                return false;
-            }
-        }
+				var t = Nullable.GetUnderlyingType(propertyInfo.PropertyType) ?? propertyInfo.PropertyType;
+				object? convertedValue = Convert.ChangeType(value, t, CultureInfo.InvariantCulture);
+				propertyInfo.SetValue(domainModel, convertedValue, null);
+				return true;
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}
 
-        private static IEnumerable<(PropertyInfo PropertyInfo, JsonPropertyAttribute? JsonPropertyAttribute)> GetDomainModelProperties<T>(T domainModel)
-        {
-            if (domainModel == null)
-                throw new ArgumentNullException(nameof(domainModel));
+		private static IEnumerable<(PropertyInfo PropertyInfo, JsonPropertyAttribute? JsonPropertyAttribute)> GetDomainModelProperties<T>(T domainModel)
+		{
+			if (domainModel == null)
+				throw new ArgumentNullException(nameof(domainModel));
 
-            return domainModel
-                .GetType()
-                .GetProperties(BindingFlags.Public | BindingFlags.Instance)
-                .Select(p => (Property: p, JsonProperty: p.GetCustomAttribute<JsonPropertyAttribute>()));
-        }
+			return domainModel
+				.GetType()
+				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
+				.Select(p => (Property: p, JsonProperty: p.GetCustomAttribute<JsonPropertyAttribute>()));
+		}
 
-        private class DateTimeJsonConverter : JsonConverter<DateTime>
-        {
-            public override bool CanRead => false;
+		private class DateTimeJsonConverter : JsonConverter<DateTime>
+		{
+			public override bool CanRead => false;
 
-            public override DateTime ReadJson(JsonReader reader, Type objectType, [AllowNull] DateTime existingValue, bool hasExistingValue, JsonSerializer serializer)
-            {
-                throw new NotImplementedException();
-            }
+			public override DateTime ReadJson(JsonReader reader, Type objectType, [AllowNull] DateTime existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
 
-            public override void WriteJson(JsonWriter writer, [AllowNull] DateTime value, JsonSerializer serializer)
-            {
-                writer.WriteValue(new DateTimeOffset(value).ToUnixTimeMilliseconds().ToString(DateTimeFormatInfo.InvariantInfo));
-            }
-        }
+			public override void WriteJson(JsonWriter writer, [AllowNull] DateTime value, JsonSerializer serializer) => writer.WriteValue(new DateTimeOffset(value).ToUnixTimeMilliseconds().ToString(DateTimeFormatInfo.InvariantInfo));
+		}
 
-        private class DecimalJsonConverter : JsonConverter<decimal>
-        {
-            public override bool CanRead => false;
+		private class DecimalJsonConverter : JsonConverter<decimal>
+		{
+			public override bool CanRead => false;
 
-            public override decimal ReadJson(JsonReader reader, Type objectType, [AllowNull] decimal existingValue, bool hasExistingValue, JsonSerializer serializer)
-            {
-                throw new NotImplementedException();
-            }
+			public override decimal ReadJson(JsonReader reader, Type objectType, [AllowNull] decimal existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
 
-            public override void WriteJson(JsonWriter writer, [AllowNull] decimal value, JsonSerializer serializer)
-            {
-                NumberFormatInfo noGroupSeparator = new CultureInfo(string.Empty, false).NumberFormat;
-                noGroupSeparator.NumberGroupSeparator = string.Empty;
-                writer.WriteValue(value.ToString("N", noGroupSeparator));
-            }
-        }
-    }
+			public override void WriteJson(JsonWriter writer, [AllowNull] decimal value, JsonSerializer serializer)
+			{
+				var noGroupSeparator = new CultureInfo(string.Empty, false).NumberFormat;
+				noGroupSeparator.NumberGroupSeparator = string.Empty;
+				writer.WriteValue(value.ToString("N", noGroupSeparator));
+			}
+		}
+	}
 }
