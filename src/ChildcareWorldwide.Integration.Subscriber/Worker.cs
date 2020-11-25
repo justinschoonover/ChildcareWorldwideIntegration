@@ -23,6 +23,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
 {
 	public class Worker : BackgroundService
 	{
+		private const int DefaultCacheTimeInMinutes = 30;
 		private const string OptOutCacheKey = "EMAIL_OPT_OUT";
 
 		// limit number of messages that are being processed by subscribers
@@ -99,15 +100,8 @@ namespace ChildcareWorldwide.Integration.Subscriber
 			async (msg, cancellationToken) =>
 			{
 				// limit concurrency without holding messages for unreasonably long times
-				using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(m_semaphoreWaitTimespan).Token, cancellationToken);
-				try
-				{
-					await m_semaphore.WaitAsync(linkedCts.Token);
-				}
-				catch (OperationCanceledException)
-				{
+				if (await IsConcurrencyLimitReached(cancellationToken))
 					return new ProcessMessageResult(SubscriberClient.Reply.Nack);
-				}
 
 				// make sure email blacklist cache is hydrated
 				await IsEmailOptedOutAsync(string.Empty);
@@ -120,7 +114,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
 						m_logger.Info("Getting all Donors from Denari...");
 						await foreach (var donor in m_drapiService.GetDonorsAsync(cancellationToken))
 						{
-							QueueImportTask(donor, publishTasks);
+							await QueueImportTask(donor, publishTasks);
 
 							// TODO: For testing, remove
 							if (publishTasks.Count > 500)
@@ -131,7 +125,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
 					{
 						var (donor, _) = await m_drapiService.GetDonorByAccountAsync(msg.Data.ToStringUtf8(), cancellationToken);
 						if (donor != null)
-							QueueImportTask(donor, publishTasks);
+							await QueueImportTask(donor, publishTasks);
 					}
 
 					if (cancellationToken.IsCancellationRequested)
@@ -156,26 +150,22 @@ namespace ChildcareWorldwide.Integration.Subscriber
 					};
 				}
 
-				void QueueImportTask(Donor donor, ICollection<Task<string>> tasks)
+				async Task QueueImportTask(Donor donor, ICollection<Task<string>> tasks)
 				{
-					m_logger.Debug($"Publishing import event for donor #{donor.Account}");
-					string? json = JsonConvert.SerializeObject(donor);
+					m_logger.Debug($"Getting Denari classifications for donor #{donor.Account}");
+					var classifications = await m_drapiService.GetClassificationsForDonorAsync(donor.DonorKey, cancellationToken).ToListAsync(cancellationToken);
 
+					m_logger.Debug($"Publishing import event for donor #{donor.Account}");
+					string json = JsonConvert.SerializeObject(donor with { Classifications = classifications });
 					tasks.Add(m_googleCloudPubSubService.PublishMessageAsync(Topics.HubspotImportFromDonor, json));
 				}
 			};
 
 		private Func<PubsubMessage, CancellationToken, Task<ProcessMessageResult>> ImportCompanyFromDonorHandler() => async (msg, cancellationToken) =>
 		{
-			using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(m_semaphoreWaitTimespan).Token, cancellationToken);
-			try
-			{
-				await m_semaphore.WaitAsync(linkedCts.Token);
-			}
-			catch (OperationCanceledException)
-			{
+			// limit concurrency without holding messages for unreasonably long times
+			if (await IsConcurrencyLimitReached(cancellationToken))
 				return new ProcessMessageResult(SubscriberClient.Reply.Nack);
-			}
 
 			var donor = JsonConvert.DeserializeObject<Donor>(msg.Data.ToStringUtf8());
 
@@ -207,15 +197,9 @@ namespace ChildcareWorldwide.Integration.Subscriber
 
 		private Func<PubsubMessage, CancellationToken, Task<ProcessMessageResult>> ImportContactFromDonorHandler() => async (msg, cancellationToken) =>
 		{
-			using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(new CancellationTokenSource(m_semaphoreWaitTimespan).Token, cancellationToken);
-			try
-			{
-				await m_semaphore.WaitAsync(linkedCts.Token);
-			}
-			catch (OperationCanceledException)
-			{
+			// limit concurrency without holding messages for unreasonably long times
+			if (await IsConcurrencyLimitReached(cancellationToken))
 				return new ProcessMessageResult(SubscriberClient.Reply.Nack);
-			}
 
 			var donor = JsonConvert.DeserializeObject<Donor>(msg.Data.ToStringUtf8());
 			ProcessMessageResult? result = null;
@@ -264,6 +248,22 @@ namespace ChildcareWorldwide.Integration.Subscriber
 			}
 		};
 
+		private async Task<bool> IsConcurrencyLimitReached(CancellationToken cancellationToken)
+		{
+			using var reasonableWaitCancellationTokenSource = new CancellationTokenSource(m_semaphoreWaitTimespan);
+			using var linkedCts = CancellationTokenSource.CreateLinkedTokenSource(reasonableWaitCancellationTokenSource.Token, cancellationToken);
+			try
+			{
+				await m_semaphore.WaitAsync(linkedCts.Token);
+			}
+			catch (OperationCanceledException)
+			{
+				return true;
+			}
+
+			return false;
+		}
+
 		private async Task TrueUpHubspotAssociations(Donor donor, CancellationToken cancellationToken)
 		{
 			var association = await m_googleCloudFirestoreService.GetHubspotAssociationsForDonorAsync(donor.Account, cancellationToken);
@@ -298,8 +298,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
 				OptOutCacheKey,
 				async entry =>
 				{
-					m_logger.Info("Caching email blacklist for 120 minutes");
-					entry.SetSlidingExpiration(TimeSpan.FromMinutes(120));
+					entry.SetSlidingExpiration(TimeSpan.FromMinutes(DefaultCacheTimeInMinutes));
 					return await m_hubspotService.GetOptedOutEmailsAsync();
 				});
 

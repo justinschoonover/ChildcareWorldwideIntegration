@@ -4,7 +4,7 @@ using Newtonsoft.Json.Linq;
 
 namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-	public record CrmObject
+	public class CrmObject
 	{
 		[NotNull]
 		public string? Id { get; init; }

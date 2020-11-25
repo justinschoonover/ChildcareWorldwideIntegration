@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Denari.Api.CustomConverters;
 using Newtonsoft.Json;
 
@@ -86,7 +87,7 @@ namespace ChildcareWorldwide.Denari.Api.Models
 
 		[JsonProperty("Donor_Notes")]
 		[JsonConverter(typeof(SplitCollectionOnCrLfJsonConverter))]
-		public IEnumerable<string> Notes { get; init; } = default!;
+		public IEnumerable<string>? Notes { get; init; }
 
 		[JsonProperty("Donor_DOB")]
 		public DateTime? Dob { get; init; }
@@ -173,22 +174,29 @@ namespace ChildcareWorldwide.Denari.Api.Models
 
 		[JsonProperty("Donor_JUR_REF")]
 		[JsonConverter(typeof(TrimStringJsonConverter))]
-		public string JurisdictionKey { get; init; } = default!;
+		[NotNull]
+		public string? JurisdictionKey { get; init; }
 
 		[JsonProperty("Donor_TYPE_REF")]
 		[JsonConverter(typeof(TrimStringJsonConverter))]
-		public string DonorTypeKey { get; init; } = default!;
+		[NotNull]
+		public string? DonorTypeKey { get; init; }
 
 		[JsonProperty("Donor_NAME1_REF")]
 		[JsonConverter(typeof(TrimStringJsonConverter))]
-		public string DonorKey { get; init; } = default!;
+		[NotNull]
+		public string? DonorKey { get; init; }
 
 		[JsonProperty("Donor_SOL_REF")]
 		[JsonConverter(typeof(TrimStringJsonConverter))]
-		public string AppealKey { get; init; } = default!;
+		[NotNull]
+		public string? AppealKey { get; init; }
 
 		[JsonProperty("COMP_REF")]
 		[JsonConverter(typeof(TrimStringJsonConverter))]
-		public string CompanyKey { get; init; } = default!;
+		[NotNull]
+		public string? CompanyKey { get; init; }
+
+		public IEnumerable<DonorClassification>? Classifications { get; init; }
 	}
 }

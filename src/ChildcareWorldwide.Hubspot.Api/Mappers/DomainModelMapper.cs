@@ -4,6 +4,8 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Linq;
 using System.Reflection;
+using ChildcareWorldwide.Hubspot.Api.Attributes;
+using ChildcareWorldwide.Hubspot.Api.CustomConverters;
 using ChildcareWorldwide.Hubspot.Api.Models;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
@@ -34,13 +36,25 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
 			return mappedObj;
 		}
 
+		public static T FilterEnumerationPropertyValues<T>(this T domainModel, CrmProperty property)
+		{
+			var validPropertyValues = property.Options?.Select(o => o.Label) ?? Enumerable.Empty<string>();
+			var currentValues = GetDomainModelProperties(domainModel)
+				.Where(p => (p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name.ToLowerInvariant()) == property.Name)
+				.Select(p => p.PropertyInfo.GetValue(domainModel)?.ToString())
+				.SelectMany(s => s?.Split(';') ?? Array.Empty<string>());
+
+			TrySetValue(domainModel, property.Name, string.Join(';', currentValues.Intersect(validPropertyValues)));
+			return domainModel;
+		}
+
 		public static string GetPropertiesForCreate<T>(T domainModel)
 		{
 			var properties = new JObject();
 			foreach (var (property, jsonProperty) in GetDomainModelProperties(domainModel))
 			{
 				if (property.GetValue(domainModel) != null)
-					properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLower(CultureInfo.InvariantCulture), property.GetValue(domainModel)));
+					properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLowerInvariant(), property.GetValue(domainModel)));
 			}
 
 			return JsonConvert.SerializeObject(new JObject(new JProperty("properties", properties)), Formatting.Indented, new DateTimeJsonConverter(), new DecimalJsonConverter());
@@ -54,14 +68,23 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
 			foreach (var (property, jsonProperty) in GetDomainModelProperties(updated))
 			{
 				if (!property.IsValueNullOrEmpty(updated) && !property.GetValue(updated)!.Equals(existingProperties[property.Name].PropertyInfo.GetValue(existing)))
-					properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLower(CultureInfo.InvariantCulture), property.GetValue(updated)));
+					properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLowerInvariant(), property.GetValue(updated)));
 			}
 
 			result = JsonConvert.SerializeObject(new JObject(new JProperty("properties", properties)), Formatting.Indented, new DateTimeJsonConverter(), new DecimalJsonConverter());
 			return properties.Count > 0;
 		}
 
-		public static List<string> GetPropertyNames<T>(T domainModel) => GetDomainModelProperties(domainModel).Select(p => p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name.ToLower(CultureInfo.InvariantCulture)).ToList();
+		public static List<string> GetPropertyNames<T>(T domainModel) =>
+			GetDomainModelProperties(domainModel)
+				.Select(p => p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name.ToLowerInvariant())
+				.ToList();
+
+		public static List<string> GetPropertiesToFilterBy<T>(T domainModel) =>
+			GetDomainModelProperties(domainModel)
+				.Where(p => p.PropertyInfo.GetCustomAttribute<FilterToAvailableHubspotPropertyValuesAttribute>() != null)
+				.Select(p => p.JsonPropertyAttribute?.PropertyName ?? p.PropertyInfo.Name.ToLowerInvariant())
+				.ToList();
 
 		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "C#9")]
 		private static bool IsValueNullOrEmpty<T>([NotNullWhen(false)] this PropertyInfo property, T instance)
@@ -72,7 +95,7 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
 			return (Nullable.GetUnderlyingType(property.PropertyType) ?? property.PropertyType) == typeof(string) && property.GetValue(instance)!.Equals(string.Empty);
 		}
 
-		private static bool TrySetValue<T>(T domainModel, string name, string value)
+		private static void TrySetValue<T>(T domainModel, string name, string value)
 		{
 			try
 			{
@@ -96,16 +119,15 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
 
 				// property isn't present in our model
 				if (propertyInfo == null)
-					return false;
+					return;
 
 				var t = Nullable.GetUnderlyingType(propertyInfo.PropertyType) ?? propertyInfo.PropertyType;
 				object? convertedValue = Convert.ChangeType(value, t, CultureInfo.InvariantCulture);
 				propertyInfo.SetValue(domainModel, convertedValue, null);
-				return true;
 			}
 			catch (Exception)
 			{
-				return false;
+				return;
 			}
 		}
 
@@ -118,29 +140,6 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
 				.GetType()
 				.GetProperties(BindingFlags.Public | BindingFlags.Instance)
 				.Select(p => (Property: p, JsonProperty: p.GetCustomAttribute<JsonPropertyAttribute>()));
-		}
-
-		private class DateTimeJsonConverter : JsonConverter<DateTime>
-		{
-			public override bool CanRead => false;
-
-			public override DateTime ReadJson(JsonReader reader, Type objectType, [AllowNull] DateTime existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
-
-			public override void WriteJson(JsonWriter writer, [AllowNull] DateTime value, JsonSerializer serializer) => writer.WriteValue(new DateTimeOffset(value).ToUnixTimeMilliseconds().ToString(DateTimeFormatInfo.InvariantInfo));
-		}
-
-		private class DecimalJsonConverter : JsonConverter<decimal>
-		{
-			public override bool CanRead => false;
-
-			public override decimal ReadJson(JsonReader reader, Type objectType, [AllowNull] decimal existingValue, bool hasExistingValue, JsonSerializer serializer) => throw new NotImplementedException();
-
-			public override void WriteJson(JsonWriter writer, [AllowNull] decimal value, JsonSerializer serializer)
-			{
-				var noGroupSeparator = new CultureInfo(string.Empty, false).NumberFormat;
-				noGroupSeparator.NumberGroupSeparator = string.Empty;
-				writer.WriteValue(value.ToString("N", noGroupSeparator));
-			}
 		}
 	}
 }
