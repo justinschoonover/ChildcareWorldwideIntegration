@@ -32,9 +32,6 @@ namespace ChildcareWorldwide.Hubspot.Api
 
 		Task AssociateCompanyAndContactAsync(Company company, Contact contact, CancellationToken cancellationToken = default);
 
-		Task HydrateCompaniesCacheAsync(CancellationToken cancellationToken = default);
-		Task HydrateContactsCacheAsync(CancellationToken cancellationToken = default);
-
 		Task<IReadOnlyList<string>> GetOptedOutEmailsAsync(CancellationToken cancellationToken = default);
 	}
 }

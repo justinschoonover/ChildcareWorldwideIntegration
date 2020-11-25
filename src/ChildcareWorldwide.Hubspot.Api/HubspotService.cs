@@ -53,78 +53,6 @@ namespace ChildcareWorldwide.Hubspot.Api
 			m_cache.Dispose();
 		}
 
-		public async Task HydrateCompaniesCacheAsync(CancellationToken cancellationToken = default)
-		{
-			var cacheOptions = new MemoryCacheEntryOptions
-			{
-				SlidingExpiration = TimeSpan.FromMinutes(120),
-			};
-
-			var parameters = new Dictionary<string, string>
-			{
-				{ "limit", "100" },
-				{ "properties", string.Join(",", DomainModelMapper.GetPropertyNames(new Company())) },
-			};
-
-			var uri = new Uri(QueryHelpers.AddQueryString($"{m_client.BaseAddress}crm/v3/objects/companies", parameters));
-			while (true)
-			{
-				var response = await RequestWithRetriesAsync(
-					async ct => await m_client.GetAsync(uri, ct),
-					cancellationToken);
-				await response.EnsureSuccessStatusCodeWithResponseBodyInException();
-
-				var companies = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync(cancellationToken));
-
-				foreach (var company in companies.Results)
-				{
-					if (company.Properties != null && company.Properties.ContainsKey("account_id") && !company.Properties.Value<string>("account_id").IsNullOrEmpty())
-						m_cache.Set(company.Properties.Value<string>("account_id"), DomainModelMapper.MapDomainModel<Company>(company), cacheOptions);
-				}
-
-				if (companies.Paging == null)
-					break;
-
-				uri = new Uri(companies.Paging.Next.Link);
-			}
-		}
-
-		public async Task HydrateContactsCacheAsync(CancellationToken cancellationToken = default)
-		{
-			var cacheOptions = new MemoryCacheEntryOptions
-			{
-				SlidingExpiration = TimeSpan.FromMinutes(120),
-			};
-
-			var parameters = new Dictionary<string, string>
-			{
-				{ "limit", "100" },
-				{ "properties", string.Join(",", DomainModelMapper.GetPropertyNames(new Contact())) },
-			};
-
-			var uri = new Uri(QueryHelpers.AddQueryString($"{m_client.BaseAddress}crm/v3/objects/contacts", parameters));
-			while (true)
-			{
-				var response = await RequestWithRetriesAsync(
-					async ct => await m_client.GetAsync(uri, ct),
-					cancellationToken);
-				await response.EnsureSuccessStatusCodeWithResponseBodyInException();
-
-				var contacts = JsonConvert.DeserializeObject<GetCrmObjectsResult>(await response.Content.ReadAsStringAsync(cancellationToken));
-
-				foreach (var contact in contacts.Results)
-				{
-					if (contact.Properties != null && contact.Properties.ContainsKey("email") && !contact.Properties.Value<string>("email").IsNullOrEmpty())
-						m_cache.Set(contact.Properties.Value<string>("email"), DomainModelMapper.MapDomainModel<Contact>(contact), cacheOptions);
-				}
-
-				if (contacts.Paging == null)
-					break;
-
-				uri = new Uri(contacts.Paging.Next.Link);
-			}
-		}
-
 		#region CRM Objects API - Companies https: //developers.hubspot.com/docs/api/crm/companies
 
 		public async Task<Company?> GetCompanyByDenariAccountIdAsync(string accountId, CancellationToken cancellationToken = default) =>
@@ -382,7 +310,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 				Inputs = associations,
 			};
 
-			string? json = JsonConvert.SerializeObject(
+			string json = JsonConvert.SerializeObject(
 				batch,
 				Formatting.Indented,
 				new JsonSerializerSettings
@@ -485,7 +413,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
 		private async Task CreateCrmPropertyGroupAsync(string endpoint, CrmPropertyGroup propertyGroup, CancellationToken cancellationToken)
 		{
-			string? json = JsonConvert.SerializeObject(
+			string json = JsonConvert.SerializeObject(
 				propertyGroup,
 				Formatting.Indented,
 				new JsonSerializerSettings
@@ -532,7 +460,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 		private async Task CreateCrmPropertyAsync(string endpoint, CrmProperty contactProperty, CancellationToken cancellationToken)
 		{
 			// this isn't a field you set on CREATE
-			string? json = JsonConvert.SerializeObject(
+			string json = JsonConvert.SerializeObject(
 				contactProperty with { CreatedAt = null },
 				Formatting.Indented,
 				new JsonSerializerSettings
