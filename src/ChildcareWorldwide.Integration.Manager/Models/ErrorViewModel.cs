@@ -1,9 +1,9 @@
 namespace ChildcareWorldwide.Integration.Manager.Models
 {
-    public class ErrorViewModel : ViewModelBase
-    {
-        public string? RequestId { get; set; }
+	public class ErrorViewModel : ViewModelBase
+	{
+		public string? RequestId { get; set; }
 
-        public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
-    }
+		public bool ShowRequestId => !string.IsNullOrEmpty(RequestId);
+	}
 }

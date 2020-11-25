@@ -2,90 +2,90 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@Model.MetaData.PageTitle</title>
-    <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
-    <!-- Custom styles -->
-    <environment include="Development">
-        <link rel="stylesheet" href="~/css/dashboard.css" />
-    </environment>
-    <environment exclude="Development">
-        <link rel="stylesheet" href="~/css/dashboard.min.css" />
-    </environment>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>@Model.MetaData.PageTitle</title>
+  <!-- Bootstrap CSS -->
+  <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+  <!-- Custom styles -->
+  <environment include="Development">
+    <link rel="stylesheet" href="~/css/dashboard.css"/>
+  </environment>
+  <environment exclude="Development">
+    <link rel="stylesheet" href="~/css/dashboard.min.css"/>
+  </environment>
 </head>
 <body>
-    <nav class="navbar navbar-dark bg-dark fixed-top flex-md-nowrap p-0 shadow">
-        <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Childcare Worldwide</a>
-        <form class="form-inline px-3" action="/Logout">
-            <div class="pr-3">
-                <span class="text-white">@Model.FullName</span>
-                <img alt="" src="@Model.AvatarUri" width="31" height="31" />
-            </div>
-            <button class="btn btn-outline-success btn-sm" type="submit">Sign Out</button>
-        </form>
+<nav class="navbar navbar-dark bg-dark fixed-top flex-md-nowrap p-0 shadow">
+  <a class="navbar-brand col-sm-3 col-md-2 mr-0" href="#">Childcare Worldwide</a>
+  <form class="form-inline px-3" action="/Logout">
+    <div class="pr-3">
+      <span class="text-white">@Model.FullName</span>
+      <img alt="" src="@Model.AvatarUri" width="31" height="31"/>
+    </div>
+    <button class="btn btn-outline-success btn-sm" type="submit">Sign Out</button>
+  </form>
 
+</nav>
+
+<div class="container-fluid">
+  <div class="row">
+    <nav class="col-md-2 d-none d-md-block bg-light sidebar">
+      <div class="sidebar-sticky">
+        <ul class="nav flex-column">
+          <li class="nav-item">
+            <a class="nav-link active" href="/">
+              <span data-feather="home"></span>
+              Integration Dashboard <span class="sr-only">(current)</span>
+            </a>
+          </li>
+        </ul>
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Denari Tools</span>
+        </h6>
+        <ul class="nav flex-column mb-2">
+          <li class="nav-item">
+            <a class="nav-link" href="/Denari/Lookup">
+              <span data-feather="user"></span>
+              API Account Lookup
+            </a>
+          </li>
+        </ul>
+
+        <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
+          <span>Hubspot Tools</span>
+        </h6>
+        <ul class="nav flex-column mb-2">
+          <li class="nav-item">
+            <a class="nav-link" href="/Hubspot/ImportFromDenari">
+              <span data-feather="upload-cloud"></span>
+              Import Donors from Denari
+            </a>
+          </li>
+        </ul>
+      </div>
     </nav>
 
-    <div class="container-fluid">
-        <div class="row">
-            <nav class="col-md-2 d-none d-md-block bg-light sidebar">
-                <div class="sidebar-sticky">
-                    <ul class="nav flex-column">
-                        <li class="nav-item">
-                            <a class="nav-link active" href="/">
-                                <span data-feather="home"></span>
-                                Integration Dashboard <span class="sr-only">(current)</span>
-                            </a>
-                        </li>
-                    </ul>
-                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                        <span>Denari Tools</span>
-                     </h6>
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Denari/Lookup">
-                                <span data-feather="user"></span>
-                                API Account Lookup
-                            </a>
-                        </li>
-                    </ul>
+    <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
+      <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+        @RenderBody()
+      </div>
+    </main>
 
-                    <h6 class="sidebar-heading d-flex justify-content-between align-items-center px-3 mt-4 mb-1 text-muted">
-                        <span>Hubspot Tools</span>
-                    </h6>
-                    <ul class="nav flex-column mb-2">
-                        <li class="nav-item">
-                            <a class="nav-link" href="/Hubspot/ImportFromDenari">
-                                <span data-feather="upload-cloud"></span>
-                                Import Donors from Denari
-                            </a>
-                        </li>
-                    </ul>
-                </div>
-            </nav>
-
-            <main role="main" class="col-md-9 ml-sm-auto col-lg-10 px-4">
-                <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-                    @RenderBody()
-                </div>
-            </main>
-
-        </div>
-    </div>
+  </div>
+</div>
 
 
-    <script src="~/lib/jquery/dist/jquery-3.4.1.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="~/lib/feather-icons/dist/js/feather.min.js"></script>
-    <environment include="Development">
-        <script src="~/js/dashboard.js" asp-append-version="true"></script>
-    </environment>
-    <environment exclude="Development">
-        <script src="~/js/dashboard.min.js" asp-append-version="false"></script>
-    </environment>
+<script src="~/lib/jquery/dist/jquery-3.4.1.min.js"></script>
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/lib/feather-icons/dist/js/feather.min.js"></script>
+<environment include="Development">
+  <script src="~/js/dashboard.js" asp-append-version="true"></script>
+</environment>
+<environment exclude="Development">
+  <script src="~/js/dashboard.min.js" asp-append-version="false"></script>
+</environment>
 
-    @RenderSection("Scripts", required: false)
+@RenderSection("Scripts", required: false)
 </body>
 </html>

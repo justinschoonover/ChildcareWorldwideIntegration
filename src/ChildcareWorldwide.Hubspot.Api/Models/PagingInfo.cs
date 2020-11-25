@@ -2,9 +2,9 @@
 
 namespace ChildcareWorldwide.Hubspot.Api.Models
 {
-    public sealed record PagingInfo
-    {
-        [NotNull]
-        public PagingNext? Next { get; init; }
-    }
+	public sealed record PagingInfo
+	{
+		[NotNull]
+		public PagingNext? Next { get; init; }
+	}
 }

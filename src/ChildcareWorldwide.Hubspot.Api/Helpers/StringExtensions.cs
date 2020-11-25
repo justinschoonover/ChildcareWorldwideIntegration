@@ -3,23 +3,24 @@ using System.Net.Mail;
 
 namespace ChildcareWorldwide.Hubspot.Api.Helpers
 {
-    internal static class StringExtensions
-    {
-        public static bool IsNullOrEmpty([NotNullWhen(false)] this string? str) => string.IsNullOrEmpty(str);
-        public static bool IsValidEmailAddress([NotNullWhen(true)] this string? email)
-        {
-            if (email.IsNullOrEmpty())
-                return false;
+	internal static class StringExtensions
+	{
+		public static bool IsNullOrEmpty([NotNullWhen(false)] this string? str) => string.IsNullOrEmpty(str);
 
-            try
-            {
-                var addr = new MailAddress(email);
-                return addr.Address == email;
-            }
-            catch
-            {
-                return false;
-            }
-        }
-    }
+		public static bool IsValidEmailAddress([NotNullWhen(true)] this string? email)
+		{
+			if (email.IsNullOrEmpty())
+				return false;
+
+			try
+			{
+				var addr = new MailAddress(email);
+				return addr.Address == email;
+			}
+			catch
+			{
+				return false;
+			}
+		}
+	}
 }

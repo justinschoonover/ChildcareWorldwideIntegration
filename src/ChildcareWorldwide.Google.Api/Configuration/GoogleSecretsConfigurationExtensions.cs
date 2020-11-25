@@ -2,11 +2,8 @@
 
 namespace ChildcareWorldwide.Google.Api.Configuration
 {
-    public static class GoogleSecretsConfigurationExtensions
-    {
-        public static IConfigurationBuilder AddGoogleSecretsConfiguration(this IConfigurationBuilder builder)
-        {
-            return builder.Add(new GoogleSecretsConfigurationSource());
-        }
-    }
+	public static class GoogleSecretsConfigurationExtensions
+	{
+		public static IConfigurationBuilder AddGoogleSecretsConfiguration(this IConfigurationBuilder builder) => builder.Add(new GoogleSecretsConfigurationSource());
+	}
 }

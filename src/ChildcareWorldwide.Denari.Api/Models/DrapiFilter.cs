@@ -2,8 +2,8 @@
 
 namespace ChildcareWorldwide.Denari.Api.Models
 {
-    public record DrapiFilter
-    {
-        public List<BooleanCondition>? FilterTree { get; init; }
-    }
+	public record DrapiFilter
+	{
+		public List<BooleanCondition>? FilterTree { get; init; }
+	}
 }
