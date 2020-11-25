@@ -21,18 +21,18 @@ namespace ChildcareWorldWide.TestFixtures.Unit
 				BigGiftAmount = 12345m,
 			};
 
-			string? properties = DomainModelMapper.GetPropertiesForCreate(company);
+			string properties = DomainModelMapper.GetPropertiesForCreate(company);
 			Assert.NotNull(properties);
 
 			// strings should be quoted
 			Assert.True(properties.Contains($"\"account_id\": \"{company.DenariAccountId}\"", StringComparison.InvariantCulture));
 
 			// dates should be milliseconds since unix epoch
-			string? dateAsUnixOffset = new DateTimeOffset((DateTime) company.DenariIntroDate).ToUnixTimeMilliseconds().ToString(DateTimeFormatInfo.InvariantInfo);
+			string dateAsUnixOffset = new DateTimeOffset((DateTime)company.DenariIntroDate).ToUnixTimeMilliseconds().ToString(DateTimeFormatInfo.InvariantInfo);
 			Assert.True(properties.Contains($"\"denari_intro_date\": \"{dateAsUnixOffset}\"", StringComparison.InvariantCulture));
 
 			// numbers should be quoted
-			string? stringGiftAmount = $"{company.BigGiftAmount:N}".Replace(",", string.Empty, StringComparison.InvariantCulture);
+			string stringGiftAmount = $"{company.BigGiftAmount:N}".Replace(",", string.Empty, StringComparison.InvariantCulture);
 			Assert.True(properties.Contains($"\"big_gift_amount\": \"{stringGiftAmount}\"", StringComparison.InvariantCulture));
 		}
 

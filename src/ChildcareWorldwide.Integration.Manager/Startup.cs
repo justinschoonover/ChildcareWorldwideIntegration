@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using ChildcareWorldwide.Denari.Api;
 using ChildcareWorldwide.Google.Api;
 using ChildcareWorldwide.Hubspot.Api;
@@ -13,7 +12,6 @@ using Microsoft.Extensions.Hosting;
 
 namespace ChildcareWorldwide.Integration.Manager
 {
-	[SuppressMessage("Performance", "CA1822:Mark members as static")]
 	public sealed class Startup
 	{
 		public Startup(IConfiguration configuration)
