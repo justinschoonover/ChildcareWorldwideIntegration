@@ -1,20 +1,19 @@
 ﻿@model ChildcareWorldwide.Integration.Manager.Models.ViewModelBase<HubspotImportFromDenari>
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <h4>Import into Hubspot from Denari</h4>
-                <form class="form-inline" method="post" asp-controller="Hubspot" asp-action="ImportFromDenari">
-                    <button class="btn btn-primary btn-sm" type="submit">Begin Import</button>
-                </form>
-            </div>
-        </div>
-        <br />
-        @if (Model.Data.ImportMessageId != null)
-        {
-
-            <div class="progress" style="height: 25px;">
-                <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
-            </div>
-        }
-
+<div class="container">
+  <div class="row">
+    <div class="col">
+      <h4>Import into Hubspot from Denari</h4>
+      <form class="form-inline" method="post" asp-controller="Hubspot" asp-action="ImportFromDenari">
+        <button class="btn btn-primary btn-sm" type="submit">Begin Import</button>
+      </form>
     </div>
+  </div>
+  <br/>
+  @if (Model.Data.ImportMessageId != null)
+  {
+    <div class="progress" style="height: 25px;">
+      <div class="progress-bar" role="progressbar" style="width: 25%;" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">25%</div>
+    </div>
+  }
+
+</div>
