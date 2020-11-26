@@ -73,7 +73,7 @@ namespace ChildcareWorldwide.Hubspot.Api.DomainModels
 		[JsonProperty("initial_source_denari")]
 		public string? DonorAppealDesc { get; set; }
 
-		[JsonProperty("source_classifications")]
+		[JsonProperty("source_classification_cloned_")]
 		[FilterToAvailableHubspotPropertyValues]
 		public string? SourceClassifications { get; set; }
 
