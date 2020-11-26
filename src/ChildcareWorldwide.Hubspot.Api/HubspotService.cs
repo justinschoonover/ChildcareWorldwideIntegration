@@ -142,7 +142,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
 		private async Task<CrmObject> UpdateCompanyAsync(Company updatedCompany, Company existingCompany, CancellationToken cancellationToken)
 		{
-			if (DomainModelMapper.GetPropertiesForUpdate(updatedCompany, existingCompany, out string? propertiesJson))
+			if (DomainModelMapper.TryGetPropertiesForUpdate(updatedCompany, existingCompany, out string? propertiesJson))
 			{
 				using var content = new StringContent(propertiesJson, Encoding.UTF8, "application/json");
 				var response = await RequestWithRetriesAsync(
@@ -256,7 +256,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 
 		private async Task<CrmObject> UpdateContactAsync(Contact updatedContact, Contact existingContact, CancellationToken cancellationToken)
 		{
-			if (DomainModelMapper.GetPropertiesForUpdate(updatedContact, existingContact, out string? propertiesJson))
+			if (DomainModelMapper.TryGetPropertiesForUpdate(updatedContact, existingContact, out string? propertiesJson))
 			{
 				using var content = new StringContent(propertiesJson, Encoding.UTF8, "application/json");
 				var response = await RequestWithRetriesAsync(

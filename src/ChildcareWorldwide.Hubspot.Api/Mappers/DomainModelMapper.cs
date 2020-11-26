@@ -53,6 +53,9 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
 			var properties = new JObject();
 			foreach (var (property, jsonProperty) in GetDomainModelProperties(domainModel))
 			{
+				if (property.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+					continue;
+
 				if (property.GetValue(domainModel) != null)
 					properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLowerInvariant(), property.GetValue(domainModel)));
 			}
@@ -61,12 +64,15 @@ namespace ChildcareWorldwide.Hubspot.Api.Mappers
 		}
 
 		[SuppressMessage("StyleCop.CSharp.SpacingRules", "SA1009:Closing parenthesis should be spaced correctly", Justification = "C#9")]
-		public static bool GetPropertiesForUpdate<T>(T updated, T existing, out string result)
+		public static bool TryGetPropertiesForUpdate<T>(T updated, T existing, out string result)
 		{
 			var properties = new JObject();
 			var existingProperties = GetDomainModelProperties(existing).ToDictionary(p => p.PropertyInfo.Name, p => p);
 			foreach (var (property, jsonProperty) in GetDomainModelProperties(updated))
 			{
+				if (property.GetCustomAttribute<JsonIgnoreAttribute>() != null)
+					continue;
+
 				if (!property.IsValueNullOrEmpty(updated) && !property.GetValue(updated)!.Equals(existingProperties[property.Name].PropertyInfo.GetValue(existing)))
 					properties.Add(new JProperty($"{jsonProperty?.PropertyName ?? property.Name}".ToLowerInvariant(), property.GetValue(updated)));
 			}
