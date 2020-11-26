@@ -18,6 +18,11 @@ namespace ChildcareWorldwide.Denari.Api
 {
 	public sealed class DrapiService : IDrapiService, IDisposable
 	{
+		private static readonly IContractResolver CamelCaseContractResolver = new DefaultContractResolver
+		{
+			NamingStrategy = new CamelCaseNamingStrategy(),
+		};
+
 		private readonly HttpClient m_client;
 		private readonly Logger m_logger;
 
@@ -140,10 +145,7 @@ namespace ChildcareWorldwide.Denari.Api
 				Formatting.Indented,
 				new JsonSerializerSettings
 				{
-					ContractResolver = new DefaultContractResolver
-					{
-						NamingStrategy = new CamelCaseNamingStrategy(),
-					},
+					ContractResolver = CamelCaseContractResolver,
 					NullValueHandling = NullValueHandling.Ignore,
 				});
 

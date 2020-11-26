@@ -29,6 +29,11 @@ namespace ChildcareWorldwide.Hubspot.Api
 		private const int CrmObjectCacheTimeInMinutes = 5;
 		private const int CrmPropertyCacheTimeInMinutes = 30;
 
+		private static readonly IContractResolver CamelCaseContractResolver = new DefaultContractResolver
+		{
+			NamingStrategy = new CamelCaseNamingStrategy(),
+		};
+
 		private readonly HttpClient m_client;
 		private readonly SimpleRateLimiter m_rateLimiter;
 		private readonly Random m_jitterer;
@@ -92,10 +97,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 						Formatting.Indented,
 						new JsonSerializerSettings
 						{
-							ContractResolver = new DefaultContractResolver
-							{
-								NamingStrategy = new CamelCaseNamingStrategy(),
-							},
+							ContractResolver = CamelCaseContractResolver,
 							NullValueHandling = NullValueHandling.Ignore,
 						});
 
@@ -190,10 +192,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 						Formatting.Indented,
 						new JsonSerializerSettings
 						{
-							ContractResolver = new DefaultContractResolver
-							{
-								NamingStrategy = new CamelCaseNamingStrategy(),
-							},
+							ContractResolver = CamelCaseContractResolver,
 							NullValueHandling = NullValueHandling.Ignore,
 						});
 
@@ -371,10 +370,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 				Formatting.Indented,
 				new JsonSerializerSettings
 				{
-					ContractResolver = new DefaultContractResolver
-					{
-						NamingStrategy = new CamelCaseNamingStrategy(),
-					},
+					ContractResolver = CamelCaseContractResolver,
 					NullValueHandling = NullValueHandling.Ignore,
 				});
 
@@ -458,10 +454,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 				Formatting.Indented,
 				new JsonSerializerSettings
 				{
-					ContractResolver = new DefaultContractResolver
-					{
-						NamingStrategy = new CamelCaseNamingStrategy(),
-					},
+					ContractResolver = CamelCaseContractResolver,
 					NullValueHandling = NullValueHandling.Ignore,
 				});
 
@@ -505,10 +498,7 @@ namespace ChildcareWorldwide.Hubspot.Api
 				Formatting.Indented,
 				new JsonSerializerSettings
 				{
-					ContractResolver = new DefaultContractResolver
-					{
-						NamingStrategy = new CamelCaseNamingStrategy(),
-					},
+					ContractResolver = CamelCaseContractResolver,
 					NullValueHandling = NullValueHandling.Ignore,
 				});
 
