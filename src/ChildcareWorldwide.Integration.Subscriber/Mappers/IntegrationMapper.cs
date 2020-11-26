@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.Linq;
 using ChildcareWorldwide.Denari.Api.Models;
 using ChildcareWorldwide.Hubspot.Api.DomainModels;
 using ChildcareWorldwide.Integration.Subscriber.Helpers;
@@ -51,6 +52,10 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
 				Gifts2YearsAgo = donor.Gifts2YearsAgo,
 				Gifts3YearsAgo = donor.Gifts3YearsAgo,
 				Gifts4YearsAgo = donor.Gifts4YearsAgo,
+				CommunicationClassifications = string.Join(";", donor.Classifications?.Select(c => c.ClassificationDescription) ?? Enumerable.Empty<string>()),
+				MiscellaneousClassifications = string.Join(";", donor.Classifications?.Select(c => c.ClassificationDescription) ?? Enumerable.Empty<string>()),
+				RelationshipClassifications = string.Join(";", donor.Classifications?.Select(c => c.ClassificationDescription) ?? Enumerable.Empty<string>()),
+				SourceClassifications = string.Join(";", donor.Classifications?.Select(c => c.ClassificationDescription) ?? Enumerable.Empty<string>()),
 			};
 
 		public static Contact MapDonorToContact(Donor donor, string email) =>
@@ -97,7 +102,11 @@ namespace ChildcareWorldwide.Integration.Subscriber.Mappers
 				Gender = donor.Gender,
 				DateOfBirth = donor.Dob.SpecifyUtc()?.ToString("d", DateTimeFormatInfo.InvariantInfo),
 				DateOfBirthSpouse = donor.DobSpouse.SpecifyUtc(),
-				Notes = string.Join("\n", donor.Notes),
+				Notes = string.Join("\n", donor.Notes ?? Enumerable.Empty<string>()),
+				CommunicationClassifications = string.Join(";", donor.Classifications?.Select(c => c.ClassificationDescription) ?? Enumerable.Empty<string>()),
+				MiscellaneousClassifications = string.Join(";", donor.Classifications?.Select(c => c.ClassificationDescription) ?? Enumerable.Empty<string>()),
+				RelationshipClassifications = string.Join(";", donor.Classifications?.Select(c => c.ClassificationDescription) ?? Enumerable.Empty<string>()),
+				SourceClassifications = string.Join(";", donor.Classifications?.Select(c => c.ClassificationDescription) ?? Enumerable.Empty<string>()),
 			};
 
 		private static bool IsForeignCountry(string? country)
