@@ -117,7 +117,7 @@ namespace ChildcareWorldwide.Integration.Subscriber
 							await QueueImportTask(donor, publishTasks);
 
 							// TODO: For testing, remove
-							if (publishTasks.Count > 500)
+							if (publishTasks.Count > 1000)
 								break;
 						}
 					}
